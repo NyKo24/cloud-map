@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ResourceMap.cloud CloudFormation Template to create an IAM role for AWS Organizations listing.'
+
+Parameters:
+  ResourceMapCloudAccountId:
+    Type: String
+    Default: '123456789012'
+    Description: 'ResourceMap.cloud AWS Account ID that will assume the role.'
+
+Resources:
+  ResourceMapCloudOrganizationsRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'Ext-ResourceMapCloud-Root'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${ResourceMapCloudAccountId}:root'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'OrganizationsListPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'organizations:ListAccounts'
+                  - 'organization:ListAccountsForParent'
+                  - 'organization:DescribeOrganization'
+                  - 'organization:DescribeOrganizationalUnit'
+                  - 'organization:ListChildren'
+                  - 'organization:ListRoots'
+                Resource: '*'
+
+Outputs:
+  ResourceMapCloudRootRoleArn:
+    Description: 'ARN of the created IAM role'
+    Value: !GetAtt ResourceMapCloudOrganizationsRole.Arn

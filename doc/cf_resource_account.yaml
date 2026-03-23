@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ResourceMap.cloud CloudFormation Template to create an IAM role for each AWS resource account'
+
+Parameters:
+  ResourceMapCloudAccountId:
+    Type: String
+    Default: '123456789012'
+    Description: 'ResourceMap.cloud AWS Account ID that will assume the role.'
+
+Resources:
+  ResourceMapCloudCrawlerRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'Ext-ResourceMapCloud-Crawler'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${ResourceMapCloudAccountId}:root'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'CrawlerPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                    # ACM
+                  - 'acm:DescribeCertificate'
+                  - 'acm:ListCertificates'
+                    # API Gateway
+                  - 'apigateway:GET'
+                    # DynamoDB
+                  - 'dynamodb:DescribeTable'
+                  - 'dynamodb:ListTables'
+                  - 'dynamodb:DescribeContinuousBackups'
+                     # IAM
+                  - 'iam:GetPolicy'
+                  - 'iam:GetRole'
+                  - 'iam:GetRolePolicy'
+                  - 'iam:ListRoles'
+                  - 'iam:ListRolePolicies'
+                  - 'iam:ListAttachedRolePolicies'
+                  - 'iam:GetAccessKeyLastUsed'
+                  - 'iam:ListAccessKeys'
+                  - 'iam:ListUsers'
+                  - 'iam:ListPolicyVersions'
+                  # KMS
+                  - 'kms:DescribeKey'
+                  - 'kms:GetKeyPolicy'
+                  - 'kms:ListKeys'
+                  - 'kms:ListResourceTags'
+                  # RDS
+                  - 'rds:DescribeDBClusters'
+                  - 'rds:DescribeDBInstances'
+                  # S3
+                  - 's3:GetBucketAcl'
+                  - 's3:GetBucketLocation'
+                  - 's3:ListBucket'
+                  - 's3:GetBucketEncryption'
+                  - 's3:GetBucketReplication'
+                  - 's3:GetBucketVersioning'
+                  # EC2 VPC - Security Groups
+                  - 'ec2:DescribeSecurityGroups'
+                  # EC2 VPC - Subnets
+                  - 'ec2:DescribeSubnets'
+                  # EC2 VPC - VPC
+                  - 'ec2:DescribeVpcs'
+                  # EC2 Instances
+                  - 'ec2:DescribeInstances'
+                  # EC2 VPC - ENI / EIP
+                  - 'ec2:DescribeAddresses'
+                  # Lambda
+                  - 'lambda:ListFunctions'
+                  - 'lambda:GetFunction'
+
+                  # CloudWatch
+                  - cloudwatch:DescribeLogGroups
+
+                  # CodeBuild
+                  - codebuild:ListProjects
+                  - codebuild:BatchGetProjects
+
+                  # Event Bridgs
+                  - events:ListRules
+                  - events:DescribeRule
+                  - events:ListTagsForResource
+
+                  # Private Certificate Authority
+                  - acm-pca:ListCertificateAuthorities
+                  - acm-pca:DescribeCertificateAuthority
+
+                  # Sns
+                  - sns:ListTopics
+                  - sns:GetTopicAttributes
+                Resource: '*'
+
+Outputs:
+  ResourceMapCloudAccountRoleArn:
+    Description: 'ARN of the created IAM role'
+    Value: !GetAtt ResourceMapCloudCrawlerRole.Arn

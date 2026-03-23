@@ -1,0 +1,91 @@
+<turbo-frame id="aws-account-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} compte(s) AWS trouvé(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'AWS Account ID', 'cssClass': 'aws-account-id', checked: true },
+            { 'label': 'Nom', 'cssClass': 'name', checked: true },
+            { 'label': 'Email', 'cssClass': 'email', checked: true },
+            { 'label': 'Méthode d\'association', 'cssClass': 'association-method', checked: true },
+            { 'label': 'Date d\'ajout à l\'organisation', 'cssClass': 'join-at', checked: true },
+            { 'label': 'Statut', 'cssClass': 'status', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-6 gap-4 items-end">
+            {{ form_row(searchForm.email) }}
+            {{ form_row(searchForm.accountName) }}
+            {{ form_row(searchForm.associationMethod) }}
+            {{ form_row(searchForm.status) }}
+        </div>
+
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_accounts_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800" >
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-aws-account-id">{{ knp_pagination_sortable(pagination, 'AWS Account ID', 'a.awsId', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-name">{{ knp_pagination_sortable(pagination, 'Nom', 'a.name', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-email">{{ knp_pagination_sortable(pagination, 'Email', 'a.email', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-association-method">{{ knp_pagination_sortable(pagination, 'Méthode d\'association', 'a.joinedMethod', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-join-at">{{ knp_pagination_sortable(pagination, 'Date d\'ajout à l\'organisation', 'a.joinedTimestamp', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-status">{{ knp_pagination_sortable(pagination, 'Statut', 'a.status', [], app.request.query.all) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for awsAccount in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-aws-account-id">
+                        {{ awsAccount.awsId }}
+                    </th>
+                    <td class="px-6 py-4 column-name">
+                        {{ awsAccount.name }}
+                    </td>
+                    <td class="px-6 py-4 column-email">
+                        {{ awsAccount.email }}
+                    </td>
+                    <td class="px-6 py-4 column-association-method">
+                        {{ awsAccount.joinedMethod }}
+                    </td>
+                    <td class="px-6 py-4 column-join-at">
+                        {{ awsAccount.joinedTimestamp|date('d/m/Y H:i:s') }}
+                    </td>
+                    <td class="px-6 py-4 column-status">
+                        {{ awsAccount.status }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>

@@ -3,9 +3,19 @@
 namespace App;
 
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
-use Symfony\Component\HttpKernel\Kernel as BaseKernel;
-
-class Kernel extends BaseKernel
+use Bref\SymfonyBridge\BrefKernel;
+class Kernel extends BrefKernel
 {
     use MicroKernelTrait;
+
+    protected function getWritableCacheDirectories(): array
+    {
+        return [
+            'pools',
+            'twig',
+            'profiler',
+            'dev',
+            'dev/profiler',
+        ];
+    }
 }

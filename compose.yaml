@@ -1,25 +1,73 @@
+name: resource-map
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+  app:
+    build: ./build/docker
+    ports:
+      - '8000:8000'
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - .:/var/task
+    env_file:
+      - .env
+    environment:
+      HANDLER: public/index.php
+      DOCUMENT_ROOT: public
+    depends_on:
+      - dynamodb
+      - mysql
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    ports: [ '8100:8080' ]
+    volumes:
+       - ./doc:/doc
+    environment:
+      SWAGGER_JSON: /doc/swagger.yaml
+
+  mysql:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    ports: ['3006:3306']
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+
+  pma:
+    image: phpmyadmin
+    ports: [ '8080:80' ]
+    links:
+      - mysql
+    environment:
+      PMA_HOSTS: mysql
+      UPLOAD_LIMIT: 1G
+
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    command: "-jar DynamoDBLocal.jar -sharedDb"
+    ports:
+      - "8001:8000"
+    volumes:
+      - dynamodb_data:/home/dynamodblocal/data
+
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin
+    ports:
+      - "8002:8001"
+    depends_on:
+      - dynamodb
+    environment:
+      DYNAMO_ENDPOINT: http://dynamodb:8000
+
+  mailcatcher:
+    image: dockage/mailcatcher
+    ports:
+      - '1025:1025' # SMTP
+      - '1080:1080' # Web UI
+    environment:
+      MAILCATCHER_SMTP_PORT: 1025
+      MAILCATCHER_HTTP_PORT: 1080
 
 volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+  dynamodb_data:

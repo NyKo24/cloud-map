@@ -1,0 +1,136 @@
+<turbo-frame id="aws-lambda-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} fonction(s) Lambda trouvée(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'Function Name', 'cssClass': 'function-name', checked: true },
+            { 'label': 'Runtime', 'cssClass': 'runtime', checked: true },
+            { 'label': 'State', 'cssClass': 'state', checked: true },
+            { 'label': 'Package Type', 'cssClass': 'package-type', checked: true },
+            { 'label': 'Memory Size', 'cssClass': 'memory-size', checked: true },
+            { 'label': 'Timeout', 'cssClass': 'timeout', checked: true },
+            { 'label': 'Last Modified', 'cssClass': 'last-modified', checked: true },
+            { 'label': 'AWS Account', 'cssClass': 'aws-account', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-5 gap-4 items-end">
+            {{ form_row(searchForm.functionName) }}
+            {{ form_row(searchForm.runtime) }}
+            {{ form_row(searchForm.state) }}
+            {{ form_row(searchForm.packageType) }}
+            {{ form_row(searchForm.functionArn) }}
+        </div>
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_lambda_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-function-name">{{ knp_pagination_sortable(pagination, 'Function Name', 'lf.functionName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-runtime">{{ knp_pagination_sortable(pagination, 'Runtime', 'lf.runtime', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-state">{{ knp_pagination_sortable(pagination, 'State', 'lf.state', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-package-type">{{ knp_pagination_sortable(pagination, 'Package Type', 'lf.packageType', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-memory-size">{{ knp_pagination_sortable(pagination, 'Memory Size', 'lf.memorySize', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-timeout">{{ knp_pagination_sortable(pagination, 'Timeout', 'lf.timeout', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-last-modified">{{ knp_pagination_sortable(pagination, 'Last Modified', 'lf.lastModified', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-aws-account">{{ knp_pagination_sortable(pagination, 'AWS Account', 'aa.name', [], app.request.query.all) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for lambdaFunction in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-function-name">
+                        {{ lambdaFunction.functionName }}
+                    </th>
+                    <td class="px-6 py-4 column-runtime">
+                        {% if lambdaFunction.runtime %}
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                {{ lambdaFunction.runtime.value }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-state">
+                        {% if lambdaFunction.state %}
+                            {% set stateColor = lambdaFunction.state.value == 'Active' ? 'green' : 'yellow' %}
+                            <span class="bg-{{ stateColor }}-100 text-{{ stateColor }}-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-{{ stateColor }}-900 dark:text-{{ stateColor }}-300">
+                                {{ lambdaFunction.state.value }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-package-type">
+                        {% if lambdaFunction.packageType %}
+                            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">
+                                {{ lambdaFunction.packageType.value }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-memory-size">
+                        {% if lambdaFunction.memorySize %}
+                            {{ lambdaFunction.memorySize }} MB
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-timeout">
+                        {% if lambdaFunction.timeout %}
+                            {{ lambdaFunction.timeout }}s
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-last-modified">
+                        {% if lambdaFunction.lastModified %}
+                            {{ lambdaFunction.lastModified|date('d/m/Y H:i:s') }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-aws-account">
+                        {{ lambdaFunction.crawl.awsAccount.name }}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucune fonction Lambda trouvée
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>
