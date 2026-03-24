@@ -1,0 +1,25 @@
+services:
+  app:
+    ports: !override []
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.resource-map.rule=Host(`resource-map.localhost`)"
+      - "traefik.http.routers.resource-map.entrypoints=web"
+      - "traefik.http.services.resource-map.loadbalancer.server.port=8000"
+    networks:
+      - default
+      - traefik-public
+
+  mysql:
+    container_name: mysql-resource-map
+    ports:
+      - "5438:3306"
+    networks:
+      - default
+      - databases
+
+networks:
+  traefik-public:
+    external: true
+  databases:
+    external: true
