@@ -58,7 +58,8 @@
             </tr>
             </thead>
             <tbody>
-            {% for sg in pagination %}
+            {% for item in pagination %}
+                {% set sg = item[0] %}
                 <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-group-id">
                         <a href="{{ path('app_aws_security_groups_show', {id: sg.id}) }}" class="text-blue-600 hover:underline dark:text-blue-400">
@@ -97,12 +98,12 @@
                     </td>
                     <td class="px-6 py-4 column-ingress-rules">
                         <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
-                            {{ sg.ingressRules|length }}
+                            {{ item.ingressCount }}
                         </span>
                     </td>
                     <td class="px-6 py-4 column-egress-rules">
                         <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
-                            {{ sg.egressRules|length }}
+                            {{ item.egressCount }}
                         </span>
                     </td>
                 </tr>

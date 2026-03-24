@@ -8,8 +8,6 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\Persistence\ObjectManager;
-use Doctrine\Persistence\ObjectRepository;
 use PHPUnit\Framework\TestCase;
 
 class SecurityGroupRepositoryTest extends TestCase
@@ -35,7 +33,7 @@ class SecurityGroupRepositoryTest extends TestCase
         $this->repository = new SecurityGroupRepository($registry);
     }
 
-    public function testListSecurityGroupsForUserIncludesRulesJoin(): void
+    public function testListSecurityGroupsForUserDoesNotJoinRules(): void
     {
         $search = new SecurityGroupListSearch();
         $search->userId = 1;
@@ -43,8 +41,8 @@ class SecurityGroupRepositoryTest extends TestCase
         $qb = $this->repository->listSecurityGroupsForUser($search);
         $dql = $qb->getDQL();
 
-        $this->assertStringContainsString('LEFT JOIN sg.rules r', $dql);
-        $this->assertStringContainsString('sg, cv, r', $dql);
+        $this->assertStringContainsString('sg, cv', $dql);
+        $this->assertStringNotContainsString('sg.rules', $dql);
     }
 
     public function testListSecurityGroupsForUserJoinsCrawlAndUser(): void
@@ -151,15 +149,43 @@ class SecurityGroupRepositoryTest extends TestCase
         $this->assertInstanceOf(\Doctrine\ORM\QueryBuilder::class, $qb);
     }
 
-    public function testListSecurityGroupsForUserUsesLeftJoinForRules(): void
+    public function testListSecurityGroupsWithRuleCountsIncludesCountSubselects(): void
     {
         $search = new SecurityGroupListSearch();
         $search->userId = 1;
 
-        $qb = $this->repository->listSecurityGroupsForUser($search);
+        $qb = $this->repository->listSecurityGroupsWithRuleCountsForUser($search);
         $dql = $qb->getDQL();
 
-        // Verify LEFT JOIN (not INNER JOIN) so SGs with zero rules are included
-        $this->assertMatchesRegularExpression('/LEFT JOIN sg\.rules/', $dql);
+        $this->assertStringContainsString('COUNT(ri.id)', $dql);
+        $this->assertStringContainsString('COUNT(re.id)', $dql);
+        $this->assertStringContainsString('ri.direction = :ingress', $dql);
+        $this->assertStringContainsString('re.direction = :egress', $dql);
+        $this->assertEquals('ingress', $qb->getParameter('ingress')->getValue());
+        $this->assertEquals('egress', $qb->getParameter('egress')->getValue());
+    }
+
+    public function testListSecurityGroupsWithRuleCountsDoesNotJoinRules(): void
+    {
+        $search = new SecurityGroupListSearch();
+        $search->userId = 1;
+
+        $qb = $this->repository->listSecurityGroupsWithRuleCountsForUser($search);
+        $dql = $qb->getDQL();
+
+        $this->assertStringNotContainsString('JOIN sg.rules', $dql);
+    }
+
+    public function testListSecurityGroupsWithRuleCountsInheritsFilters(): void
+    {
+        $search = new SecurityGroupListSearch();
+        $search->userId = 1;
+        $search->groupId = 'sg-test';
+
+        $qb = $this->repository->listSecurityGroupsWithRuleCountsForUser($search);
+        $dql = $qb->getDQL();
+
+        $this->assertStringContainsString('sg.groupId LIKE :groupId', $dql);
+        $this->assertStringContainsString('COUNT(ri.id)', $dql);
     }
 }
