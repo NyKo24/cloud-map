@@ -15,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class AWSLambdaController extends AbstractController
 {
-    #[Route('/aws/lambda', name: 'app_aws_lambda_list')]
+    #[Route('/app/aws/lambda', name: 'app_aws_lambda_list')]
     public function index(Request $request, LambdaFunctionRepository $lambdaFunctionRepository, PaginatorInterface $paginator): Response
     {
         return $this->render('app/aws_lambda/index.html.twig');
     }
 
-    #[Route('/aws/lambda/_frame', name: 'app_aws_lambda_list_frame')]
+    #[Route('/app/aws/lambda/_frame', name: 'app_aws_lambda_list_frame')]
     public function indexFrame(Request $request, LambdaFunctionRepository $lambdaFunctionRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -50,7 +50,7 @@ final class AWSLambdaController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/lambda/export', name: 'app_aws_lambda_list_export')]
+    #[Route('/app/aws/lambda/export', name: 'app_aws_lambda_list_export')]
     public function indexExport(Request $request, LambdaFunctionRepository $lambdaFunctionRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */

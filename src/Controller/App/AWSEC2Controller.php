@@ -15,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class AWSEC2Controller extends AbstractController
 {
-    #[Route('/aws/ec2', name: 'app_aws_ec2_list')]
+    #[Route('/app/aws/ec2', name: 'app_aws_ec2_list')]
     public function index(Request $request, Ec2InstanceRepository $ec2InstanceRepository, PaginatorInterface $paginator): Response
     {
         return $this->render('app/aws_ec2/index.html.twig');
     }
 
-    #[Route('/aws/ec2/_frame', name: 'app_aws_ec2_list_frame')]
+    #[Route('/app/aws/ec2/_frame', name: 'app_aws_ec2_list_frame')]
     public function indexFrame(Request $request, Ec2InstanceRepository $ec2InstanceRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -50,7 +50,7 @@ final class AWSEC2Controller extends AbstractController
         ]);
     }
 
-    #[Route('/aws/ec2/export', name: 'app_aws_ec2_list_export')]
+    #[Route('/app/aws/ec2/export', name: 'app_aws_ec2_list_export')]
     public function indexExport(Request $request, Ec2InstanceRepository $ec2InstanceRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */

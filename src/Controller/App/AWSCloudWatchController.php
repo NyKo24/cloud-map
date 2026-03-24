@@ -15,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class AWSCloudWatchController extends AbstractController
 {
-    #[Route('/aws/cloudwatch/alarms', name: 'app_aws_cloudwatch_alarms_list')]
+    #[Route('/app/aws/cloudwatch/alarms', name: 'app_aws_cloudwatch_alarms_list')]
     public function index(): Response
     {
         return $this->render('app/aws_cloudwatch/index.html.twig');
     }
 
-    #[Route('/aws/cloudwatch/alarms/_frame', name: 'app_aws_cloudwatch_alarms_list_frame')]
+    #[Route('/app/aws/cloudwatch/alarms/_frame', name: 'app_aws_cloudwatch_alarms_list_frame')]
     public function indexFrame(Request $request, CloudWatchAlarmRepository $cloudWatchAlarmRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -50,7 +50,7 @@ final class AWSCloudWatchController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/cloudwatch/alarms/export', name: 'app_aws_cloudwatch_alarms_list_export')]
+    #[Route('/app/aws/cloudwatch/alarms/export', name: 'app_aws_cloudwatch_alarms_list_export')]
     public function indexExport(Request $request, CloudWatchAlarmRepository $cloudWatchAlarmRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */

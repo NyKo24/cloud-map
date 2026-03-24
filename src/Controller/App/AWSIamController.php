@@ -20,13 +20,13 @@ final class AWSIamController extends AbstractController
 {
     // --- IAM Roles ---
 
-    #[Route('/aws/iam/roles', name: 'app_aws_iam_roles_list')]
+    #[Route('/app/aws/iam/roles', name: 'app_aws_iam_roles_list')]
     public function rolesIndex(): Response
     {
         return $this->render('app/aws_iam/roles_index.html.twig');
     }
 
-    #[Route('/aws/iam/roles/_frame', name: 'app_aws_iam_roles_list_frame')]
+    #[Route('/app/aws/iam/roles/_frame', name: 'app_aws_iam_roles_list_frame')]
     public function rolesIndexFrame(Request $request, IamRoleRepository $iamRoleRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -55,7 +55,7 @@ final class AWSIamController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/iam/roles/export', name: 'app_aws_iam_roles_list_export')]
+    #[Route('/app/aws/iam/roles/export', name: 'app_aws_iam_roles_list_export')]
     public function rolesIndexExport(Request $request, IamRoleRepository $iamRoleRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */
@@ -87,13 +87,13 @@ final class AWSIamController extends AbstractController
 
     // --- IAM Users ---
 
-    #[Route('/aws/iam/users', name: 'app_aws_iam_users_list')]
+    #[Route('/app/aws/iam/users', name: 'app_aws_iam_users_list')]
     public function usersIndex(): Response
     {
         return $this->render('app/aws_iam/users_index.html.twig');
     }
 
-    #[Route('/aws/iam/users/_frame', name: 'app_aws_iam_users_list_frame')]
+    #[Route('/app/aws/iam/users/_frame', name: 'app_aws_iam_users_list_frame')]
     public function usersIndexFrame(Request $request, IamUserRepository $iamUserRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -122,7 +122,7 @@ final class AWSIamController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/iam/users/export', name: 'app_aws_iam_users_list_export')]
+    #[Route('/app/aws/iam/users/export', name: 'app_aws_iam_users_list_export')]
     public function usersIndexExport(Request $request, IamUserRepository $iamUserRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */
