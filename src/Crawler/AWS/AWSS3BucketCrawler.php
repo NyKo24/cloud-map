@@ -5,10 +5,22 @@ namespace App\Crawler\AWS;
 use App\Entity\AWS\S3\S3Bucket;
 use App\Entity\CrawlVersion;
 use Aws\Credentials\Credentials;
+use Aws\S3\Exception\S3Exception;
 use Aws\S3\S3Client;
+use Psr\Log\LoggerInterface;
 
 class AWSS3BucketCrawler extends AWSBaseCrawler
 {
+    public function __construct(
+        \Doctrine\Persistence\ManagerRegistry $registry,
+        \Doctrine\ORM\EntityManagerInterface $entityManager,
+        \Symfony\Component\Serializer\SerializerInterface $serializer,
+        \Symfony\Component\Serializer\Normalizer\DenormalizerInterface $denormalizer,
+        private readonly ?LoggerInterface $logger = null,
+    ) {
+        parent::__construct($registry, $entityManager, $serializer, $denormalizer);
+    }
+
     public function isGlobal(): bool
     {
         return true;
@@ -61,9 +73,16 @@ class AWSS3BucketCrawler extends AWSBaseCrawler
             ]);
 
             $s3Bucket->setEncryptionEnabled(true);
-        } catch (\Exception $e) {
-            // ServerSideEncryptionConfigurationNotFoundError means no encryption
-            $s3Bucket->setEncryptionEnabled(false);
+        } catch (S3Exception $e) {
+            if ($e->getAwsErrorCode() === 'ServerSideEncryptionConfigurationNotFoundError') {
+                $s3Bucket->setEncryptionEnabled(false);
+            } else {
+                // Access denied or other AWS errors — leave as null (unknown)
+                $this->logger?->warning('Failed to fetch S3 bucket encryption for "{bucket}": {error}', [
+                    'bucket' => $s3Bucket->getName(),
+                    'error' => $e->getAwsErrorCode() ?? $e->getMessage(),
+                ]);
+            }
         }
     }
 

@@ -11,6 +11,7 @@ use Aws\S3\S3Client;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
@@ -129,7 +130,7 @@ class AWSS3BucketCrawlerTest extends TestCase
         $crawler = $this->createCrawlerWithMockClient(
             [$bucketData],
             'eu-west-1',
-            true,
+            null,
             'Enabled'
         );
         $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
@@ -153,7 +154,7 @@ class AWSS3BucketCrawlerTest extends TestCase
         $crawler = $this->createCrawlerWithMockClient(
             [$bucketData],
             '',
-            true,
+            null,
             'Suspended'
         );
         $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
@@ -161,28 +162,99 @@ class AWSS3BucketCrawlerTest extends TestCase
         $this->assertSame('us-east-1', $s3Bucket->getRegion());
     }
 
+    public function testCrawlSetsEncryptionNullOnAccessDenied(): void
+    {
+        $bucketData = ['Name' => 'denied-bucket', 'CreationDate' => '2024-01-01'];
+
+        $s3Bucket = new S3Bucket();
+        $s3Bucket->setName('denied-bucket');
+
+        $this->denormalizer->expects($this->once())
+            ->method('denormalize')
+            ->willReturn($s3Bucket);
+
+        $this->entityManager->expects($this->once())
+            ->method('persist');
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with(
+                $this->stringContains('Failed to fetch S3 bucket encryption'),
+                $this->callback(fn(array $ctx) => $ctx['bucket'] === 'denied-bucket' && $ctx['error'] === 'AccessDenied')
+            );
+
+        $crawler = $this->createCrawlerWithMockClient(
+            [$bucketData],
+            'eu-west-1',
+            'AccessDenied',
+            'Enabled',
+            $logger,
+        );
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+
+        $this->assertNull($s3Bucket->isEncryptionEnabled());
+    }
+
+    public function testCrawlSetsEncryptionFalseOnNotFoundError(): void
+    {
+        $bucketData = ['Name' => 'no-encryption-bucket', 'CreationDate' => '2024-01-01'];
+
+        $s3Bucket = new S3Bucket();
+        $s3Bucket->setName('no-encryption-bucket');
+
+        $this->denormalizer->expects($this->once())
+            ->method('denormalize')
+            ->willReturn($s3Bucket);
+
+        $this->entityManager->expects($this->once())
+            ->method('persist');
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $crawler = $this->createCrawlerWithMockClient(
+            [$bucketData],
+            'eu-west-1',
+            'ServerSideEncryptionConfigurationNotFoundError',
+            'Enabled',
+        );
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+
+        $this->assertFalse($s3Bucket->isEncryptionEnabled());
+    }
+
     /**
      * @param array $buckets
      * @param string|null $location
-     * @param bool $encryptionExists
+     * @param string|null $encryptionErrorCode null means encryption exists, string is the S3Exception error code to throw
      * @param string|null $versioningStatus
+     * @param LoggerInterface|null $logger
      */
     private function createCrawlerWithMockClient(
         array $buckets,
         ?string $location = 'eu-west-1',
-        bool $encryptionExists = true,
-        ?string $versioningStatus = 'Enabled'
+        ?string $encryptionErrorCode = null,
+        ?string $versioningStatus = 'Enabled',
+        ?LoggerInterface $logger = null,
     ): AWSS3BucketCrawler {
         $s3Client = $this->createMock(S3Client::class);
 
         $s3Client->method('__call')
-            ->willReturnCallback(function (string $method, array $args) use ($buckets, $location, $encryptionExists, $versioningStatus) {
+            ->willReturnCallback(function (string $method, array $args) use ($buckets, $location, $encryptionErrorCode, $versioningStatus) {
                 return match ($method) {
                     'listBuckets' => new Result(['Buckets' => $buckets]),
                     'getBucketLocation' => new Result(['LocationConstraint' => $location]),
-                    'getBucketEncryption' => $encryptionExists
-                        ? new Result(['ServerSideEncryptionConfiguration' => []])
-                        : throw new \Aws\S3\Exception\S3Exception('Not found', $this->createMock(\Aws\CommandInterface::class)),
+                    'getBucketEncryption' => $encryptionErrorCode !== null
+                        ? throw new \Aws\S3\Exception\S3Exception(
+                            $encryptionErrorCode,
+                            $this->createMock(\Aws\CommandInterface::class),
+                            ['code' => $encryptionErrorCode],
+                        )
+                        : new Result(['ServerSideEncryptionConfiguration' => []]),
                     'getBucketVersioning' => new Result(['Status' => $versioningStatus]),
                     default => new Result([]),
                 };
@@ -197,6 +269,7 @@ class AWSS3BucketCrawlerTest extends TestCase
             $this->createMock(SerializerInterface::class),
             $denormalizer,
             $s3Client,
+            $logger,
         ) extends AWSS3BucketCrawler {
             private S3Client $mockClient;
 
@@ -206,8 +279,9 @@ class AWSS3BucketCrawlerTest extends TestCase
                 \Symfony\Component\Serializer\SerializerInterface $serializer,
                 \Symfony\Component\Serializer\Normalizer\DenormalizerInterface $denormalizer,
                 S3Client $mockClient,
+                ?LoggerInterface $logger = null,
             ) {
-                parent::__construct($registry, $entityManager, $serializer, $denormalizer);
+                parent::__construct($registry, $entityManager, $serializer, $denormalizer, $logger);
                 $this->mockClient = $mockClient;
             }
 
