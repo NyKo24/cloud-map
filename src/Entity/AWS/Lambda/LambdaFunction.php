@@ -24,7 +24,7 @@ class LambdaFunction
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', nullable: true)]

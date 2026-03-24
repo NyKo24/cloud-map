@@ -15,7 +15,7 @@ class VpcIpv6CidrBlockAssociation
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Vpc::class, inversedBy: 'ipv6CidrBlockAssociationSet')]
