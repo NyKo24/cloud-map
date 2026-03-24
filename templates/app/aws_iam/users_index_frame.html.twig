@@ -1,0 +1,103 @@
+<turbo-frame id="aws-iam-users-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} utilisateur(s) IAM trouvé(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'User Name', 'cssClass': 'user-name', checked: true },
+            { 'label': 'User ID', 'cssClass': 'user-id', checked: true },
+            { 'label': 'ARN', 'cssClass': 'arn', checked: true },
+            { 'label': 'Path', 'cssClass': 'path', checked: true },
+            { 'label': 'Password Last Used', 'cssClass': 'password-last-used', checked: true },
+            { 'label': 'Created', 'cssClass': 'create-date', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-3 gap-4 items-end">
+            {{ form_row(searchForm.userName) }}
+            {{ form_row(searchForm.path) }}
+            {{ form_row(searchForm.arn) }}
+        </div>
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_iam_users_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-user-name">{{ knp_pagination_sortable(pagination, 'User Name', 'iu.userName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-user-id">{{ knp_pagination_sortable(pagination, 'User ID', 'iu.userId', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-arn">ARN</th>
+                <th scope="col" class="px-6 py-3 column-path">{{ knp_pagination_sortable(pagination, 'Path', 'iu.path', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-password-last-used">{{ knp_pagination_sortable(pagination, 'Password Last Used', 'iu.passwordLastUsed', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-create-date">{{ knp_pagination_sortable(pagination, 'Created', 'iu.createDate', [], app.request.query.all) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for iamUser in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-user-name">
+                        {{ iamUser.userName }}
+                    </th>
+                    <td class="px-6 py-4 column-user-id">
+                        <span class="text-xs font-mono">{{ iamUser.userId }}</span>
+                    </td>
+                    <td class="px-6 py-4 column-arn">
+                        <span class="text-xs font-mono break-all">{{ iamUser.arn }}</span>
+                    </td>
+                    <td class="px-6 py-4 column-path">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                            {{ iamUser.path }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 column-password-last-used">
+                        {% if iamUser.passwordLastUsed %}
+                            {{ iamUser.passwordLastUsed|date('d/m/Y H:i:s') }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-create-date">
+                        {% if iamUser.createDate %}
+                            {{ iamUser.createDate|date('d/m/Y H:i:s') }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucun utilisateur IAM trouvé
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>
