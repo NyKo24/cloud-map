@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\AWS\AwsAccount;
 use App\Entity\AWS\EC2\Ec2Instance;
 use App\Entity\AWS\EC2\SecurityGroup;
+use App\Entity\AWS\CloudWatch\CloudWatchAlarm;
 use App\Entity\AWS\IAM\IamRole;
 use App\Entity\AWS\IAM\IamUser;
 use App\Entity\AWS\Lambda\LambdaFunction;
@@ -85,6 +86,12 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: IamUser::class, mappedBy: 'crawl')]
     private Collection $iamUsers;
 
+    /**
+     * @var Collection<int, CloudWatchAlarm>
+     */
+    #[ORM\OneToMany(targetEntity: CloudWatchAlarm::class, mappedBy: 'crawl')]
+    private Collection $cloudWatchAlarms;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -96,6 +103,7 @@ class CrawlVersion
         $this->s3Buckets = new ArrayCollection();
         $this->iamRoles = new ArrayCollection();
         $this->iamUsers = new ArrayCollection();
+        $this->cloudWatchAlarms = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -384,6 +392,35 @@ class CrawlVersion
         if ($this->iamUsers->removeElement($iamUser)) {
             if ($iamUser->getCrawl() === $this) {
                 $iamUser->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CloudWatchAlarm>
+     */
+    public function getCloudWatchAlarms(): Collection
+    {
+        return $this->cloudWatchAlarms;
+    }
+
+    public function addCloudWatchAlarm(CloudWatchAlarm $cloudWatchAlarm): static
+    {
+        if (!$this->cloudWatchAlarms->contains($cloudWatchAlarm)) {
+            $this->cloudWatchAlarms->add($cloudWatchAlarm);
+            $cloudWatchAlarm->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCloudWatchAlarm(CloudWatchAlarm $cloudWatchAlarm): static
+    {
+        if ($this->cloudWatchAlarms->removeElement($cloudWatchAlarm)) {
+            if ($cloudWatchAlarm->getCrawl() === $this) {
+                $cloudWatchAlarm->setCrawl(null);
             }
         }
 

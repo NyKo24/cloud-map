@@ -2,6 +2,7 @@
 
 namespace App\Tests\Crawler\AWS;
 
+use App\Crawler\AWS\AWSCloudWatchAlarmCrawler;
 use App\Crawler\AWS\AWSEC2InstanceCrawler;
 use App\Crawler\AWS\AWSIamCrawler;
 use App\Crawler\AWS\AWSLambdaCrawler;
@@ -99,5 +100,17 @@ class ExistingCrawlersTest extends TestCase
         );
 
         $this->assertTrue($crawler->isGlobal());
+    }
+
+    public function testCloudWatchAlarmCrawlerIsNotGlobal(): void
+    {
+        $crawler = new AWSCloudWatchAlarmCrawler(
+            $this->createMock(ManagerRegistry::class),
+            $this->createMock(EntityManagerInterface::class),
+            $this->createMock(SerializerInterface::class),
+            $this->createMock(DenormalizerInterface::class),
+        );
+
+        $this->assertFalse($crawler->isGlobal());
     }
 }

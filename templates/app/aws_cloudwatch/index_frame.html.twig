@@ -1,0 +1,139 @@
+<turbo-frame id="aws-cloudwatch-alarms-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} alarme(s) CloudWatch trouvée(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'Alarm Name', 'cssClass': 'alarm-name', checked: true },
+            { 'label': 'State', 'cssClass': 'state-value', checked: true },
+            { 'label': 'Metric', 'cssClass': 'metric-name', checked: true },
+            { 'label': 'Namespace', 'cssClass': 'namespace', checked: true },
+            { 'label': 'Statistic', 'cssClass': 'statistic', checked: true },
+            { 'label': 'Period', 'cssClass': 'period', checked: true },
+            { 'label': 'Threshold', 'cssClass': 'threshold', checked: true },
+            { 'label': 'Actions', 'cssClass': 'actions-enabled', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-5 gap-4 items-end">
+            {{ form_row(searchForm.alarmName) }}
+            {{ form_row(searchForm.stateValue) }}
+            {{ form_row(searchForm.metricName) }}
+            {{ form_row(searchForm.namespace) }}
+            {{ form_row(searchForm.actionsEnabled) }}
+        </div>
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_cloudwatch_alarms_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-alarm-name">{{ knp_pagination_sortable(pagination, 'Alarm Name', 'cwa.alarmName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-state-value">{{ knp_pagination_sortable(pagination, 'State', 'cwa.stateValue', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-metric-name">{{ knp_pagination_sortable(pagination, 'Metric', 'cwa.metricName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-namespace">{{ knp_pagination_sortable(pagination, 'Namespace', 'cwa.namespace', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-statistic">{{ knp_pagination_sortable(pagination, 'Statistic', 'cwa.statistic', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-period">{{ knp_pagination_sortable(pagination, 'Period', 'cwa.period', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-threshold">{{ knp_pagination_sortable(pagination, 'Threshold', 'cwa.threshold', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-actions-enabled">{{ knp_pagination_sortable(pagination, 'Actions', 'cwa.actionsEnabled', [], app.request.query.all) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for alarm in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-alarm-name">
+                        {{ alarm.alarmName }}
+                    </th>
+                    <td class="px-6 py-4 column-state-value">
+                        {% if alarm.stateValue == 'OK' %}
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                {{ alarm.stateValue }}
+                            </span>
+                        {% elseif alarm.stateValue == 'ALARM' %}
+                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                {{ alarm.stateValue }}
+                            </span>
+                        {% elseif alarm.stateValue == 'INSUFFICIENT_DATA' %}
+                            <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                                {{ alarm.stateValue }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-metric-name">
+                        {{ alarm.metricName ?? '-' }}
+                    </td>
+                    <td class="px-6 py-4 column-namespace">
+                        {% if alarm.namespace %}
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                {{ alarm.namespace }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-statistic">
+                        {{ alarm.statistic ?? '-' }}
+                    </td>
+                    <td class="px-6 py-4 column-period">
+                        {% if alarm.period %}
+                            {{ alarm.period }}s
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-threshold">
+                        {% if alarm.threshold is not null %}
+                            {{ alarm.comparisonOperator ?? '' }} {{ alarm.threshold }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-actions-enabled">
+                        {% if alarm.actionsEnabled %}
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Yes</span>
+                        {% elseif alarm.actionsEnabled is not null %}
+                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">No</span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucune alarme CloudWatch trouvée
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>
