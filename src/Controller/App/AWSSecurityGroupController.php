@@ -15,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class AWSSecurityGroupController extends AbstractController
 {
-    #[Route('/aws/security-groups', name: 'app_aws_security_groups_list')]
+    #[Route('/app/aws/security-groups', name: 'app_aws_security_groups_list')]
     public function index(Request $request, SecurityGroupRepository $securityGroupRepository, PaginatorInterface $paginator): Response
     {
         return $this->render('app/aws_security_groups/index.html.twig');
     }
 
-    #[Route('/aws/security-groups/_frame', name: 'app_aws_security_groups_list_frame')]
+    #[Route('/app/aws/security-groups/_frame', name: 'app_aws_security_groups_list_frame')]
     public function indexFrame(Request $request, SecurityGroupRepository $securityGroupRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -50,7 +50,7 @@ final class AWSSecurityGroupController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/security-groups/export', name: 'app_aws_security_groups_list_export')]
+    #[Route('/app/aws/security-groups/export', name: 'app_aws_security_groups_list_export')]
     public function indexExport(Request $request, SecurityGroupRepository $securityGroupRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */
@@ -80,7 +80,7 @@ final class AWSSecurityGroupController extends AbstractController
         return $response;
     }
 
-    #[Route('/aws/security-groups/{id}', name: 'app_aws_security_groups_show')]
+    #[Route('/app/aws/security-groups/{id}', name: 'app_aws_security_groups_show')]
     public function show(int $id, SecurityGroupRepository $securityGroupRepository): Response
     {
         /** @var User $user */

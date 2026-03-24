@@ -20,13 +20,13 @@ final class AWSContainersController extends AbstractController
 {
     // --- ECS ---
 
-    #[Route('/aws/ecs/clusters', name: 'app_aws_ecs_clusters_list')]
+    #[Route('/app/aws/ecs/clusters', name: 'app_aws_ecs_clusters_list')]
     public function ecsIndex(): Response
     {
         return $this->render('app/aws_containers/ecs_index.html.twig');
     }
 
-    #[Route('/aws/ecs/clusters/_frame', name: 'app_aws_ecs_clusters_list_frame')]
+    #[Route('/app/aws/ecs/clusters/_frame', name: 'app_aws_ecs_clusters_list_frame')]
     public function ecsIndexFrame(Request $request, EcsClusterRepository $ecsClusterRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -55,7 +55,7 @@ final class AWSContainersController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/ecs/clusters/export', name: 'app_aws_ecs_clusters_list_export')]
+    #[Route('/app/aws/ecs/clusters/export', name: 'app_aws_ecs_clusters_list_export')]
     public function ecsIndexExport(Request $request, EcsClusterRepository $ecsClusterRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */
@@ -87,13 +87,13 @@ final class AWSContainersController extends AbstractController
 
     // --- EKS ---
 
-    #[Route('/aws/eks/clusters', name: 'app_aws_eks_clusters_list')]
+    #[Route('/app/aws/eks/clusters', name: 'app_aws_eks_clusters_list')]
     public function eksIndex(): Response
     {
         return $this->render('app/aws_containers/eks_index.html.twig');
     }
 
-    #[Route('/aws/eks/clusters/_frame', name: 'app_aws_eks_clusters_list_frame')]
+    #[Route('/app/aws/eks/clusters/_frame', name: 'app_aws_eks_clusters_list_frame')]
     public function eksIndexFrame(Request $request, EksClusterRepository $eksClusterRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -122,7 +122,7 @@ final class AWSContainersController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/eks/clusters/export', name: 'app_aws_eks_clusters_list_export')]
+    #[Route('/app/aws/eks/clusters/export', name: 'app_aws_eks_clusters_list_export')]
     public function eksIndexExport(Request $request, EksClusterRepository $eksClusterRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */

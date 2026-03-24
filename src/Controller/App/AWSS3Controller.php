@@ -15,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class AWSS3Controller extends AbstractController
 {
-    #[Route('/aws/s3', name: 'app_aws_s3_list')]
+    #[Route('/app/aws/s3', name: 'app_aws_s3_list')]
     public function index(Request $request, S3BucketRepository $s3BucketRepository, PaginatorInterface $paginator): Response
     {
         return $this->render('app/aws_s3/index.html.twig');
     }
 
-    #[Route('/aws/s3/_frame', name: 'app_aws_s3_list_frame')]
+    #[Route('/app/aws/s3/_frame', name: 'app_aws_s3_list_frame')]
     public function indexFrame(Request $request, S3BucketRepository $s3BucketRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -50,7 +50,7 @@ final class AWSS3Controller extends AbstractController
         ]);
     }
 
-    #[Route('/aws/s3/export', name: 'app_aws_s3_list_export')]
+    #[Route('/app/aws/s3/export', name: 'app_aws_s3_list_export')]
     public function indexExport(Request $request, S3BucketRepository $s3BucketRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */

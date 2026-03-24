@@ -15,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 final class AWSRdsController extends AbstractController
 {
-    #[Route('/aws/rds', name: 'app_aws_rds_list')]
+    #[Route('/app/aws/rds', name: 'app_aws_rds_list')]
     public function index(Request $request, RdsInstanceRepository $rdsInstanceRepository, PaginatorInterface $paginator): Response
     {
         return $this->render('app/aws_rds/index.html.twig');
     }
 
-    #[Route('/aws/rds/_frame', name: 'app_aws_rds_list_frame')]
+    #[Route('/app/aws/rds/_frame', name: 'app_aws_rds_list_frame')]
     public function indexFrame(Request $request, RdsInstanceRepository $rdsInstanceRepository, PaginatorInterface $paginator): Response
     {
         /** @var User $user */
@@ -50,7 +50,7 @@ final class AWSRdsController extends AbstractController
         ]);
     }
 
-    #[Route('/aws/rds/export', name: 'app_aws_rds_list_export')]
+    #[Route('/app/aws/rds/export', name: 'app_aws_rds_list_export')]
     public function indexExport(Request $request, RdsInstanceRepository $rdsInstanceRepository, SerializerInterface $serializer): Response
     {
         /** @var User $user */
