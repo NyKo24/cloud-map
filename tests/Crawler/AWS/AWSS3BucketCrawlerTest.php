@@ -199,6 +199,76 @@ class AWSS3BucketCrawlerTest extends TestCase
         $this->assertNull($s3Bucket->isEncryptionEnabled());
     }
 
+    public function testCrawlSetsLocationNullOnAccessDenied(): void
+    {
+        $bucketData = ['Name' => 'denied-bucket', 'CreationDate' => '2024-01-01'];
+
+        $s3Bucket = new S3Bucket();
+        $s3Bucket->setName('denied-bucket');
+
+        $this->denormalizer->expects($this->once())
+            ->method('denormalize')
+            ->willReturn($s3Bucket);
+
+        $this->entityManager->expects($this->once())
+            ->method('persist');
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with(
+                $this->stringContains('Failed to fetch S3 bucket location'),
+                $this->callback(fn(array $ctx) => $ctx['bucket'] === 'denied-bucket' && $ctx['error'] === 'AccessDenied')
+            );
+
+        $crawler = $this->createCrawlerWithMockClient(
+            [$bucketData],
+            logger: $logger,
+            locationErrorCode: 'AccessDenied',
+        );
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+
+        $this->assertNull($s3Bucket->getRegion());
+    }
+
+    public function testCrawlSetsVersioningNullOnAccessDenied(): void
+    {
+        $bucketData = ['Name' => 'denied-bucket', 'CreationDate' => '2024-01-01'];
+
+        $s3Bucket = new S3Bucket();
+        $s3Bucket->setName('denied-bucket');
+
+        $this->denormalizer->expects($this->once())
+            ->method('denormalize')
+            ->willReturn($s3Bucket);
+
+        $this->entityManager->expects($this->once())
+            ->method('persist');
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('warning')
+            ->with(
+                $this->stringContains('Failed to fetch S3 bucket versioning'),
+                $this->callback(fn(array $ctx) => $ctx['bucket'] === 'denied-bucket' && $ctx['error'] === 'AccessDenied')
+            );
+
+        $crawler = $this->createCrawlerWithMockClient(
+            [$bucketData],
+            logger: $logger,
+            versioningErrorCode: 'AccessDenied',
+        );
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+
+        $this->assertNull($s3Bucket->getVersioningStatus());
+    }
+
     public function testCrawlSetsEncryptionFalseOnNotFoundError(): void
     {
         $bucketData = ['Name' => 'no-encryption-bucket', 'CreationDate' => '2024-01-01'];
@@ -233,6 +303,8 @@ class AWSS3BucketCrawlerTest extends TestCase
      * @param string|null $encryptionErrorCode null means encryption exists, string is the S3Exception error code to throw
      * @param string|null $versioningStatus
      * @param LoggerInterface|null $logger
+     * @param string|null $locationErrorCode null means no error, string is the S3Exception error code to throw
+     * @param string|null $versioningErrorCode null means no error, string is the S3Exception error code to throw
      */
     private function createCrawlerWithMockClient(
         array $buckets,
@@ -240,14 +312,22 @@ class AWSS3BucketCrawlerTest extends TestCase
         ?string $encryptionErrorCode = null,
         ?string $versioningStatus = 'Enabled',
         ?LoggerInterface $logger = null,
+        ?string $locationErrorCode = null,
+        ?string $versioningErrorCode = null,
     ): AWSS3BucketCrawler {
         $s3Client = $this->createMock(S3Client::class);
 
         $s3Client->method('__call')
-            ->willReturnCallback(function (string $method, array $args) use ($buckets, $location, $encryptionErrorCode, $versioningStatus) {
+            ->willReturnCallback(function (string $method, array $args) use ($buckets, $location, $encryptionErrorCode, $versioningStatus, $locationErrorCode, $versioningErrorCode) {
                 return match ($method) {
                     'listBuckets' => new Result(['Buckets' => $buckets]),
-                    'getBucketLocation' => new Result(['LocationConstraint' => $location]),
+                    'getBucketLocation' => $locationErrorCode !== null
+                        ? throw new \Aws\S3\Exception\S3Exception(
+                            $locationErrorCode,
+                            $this->createMock(\Aws\CommandInterface::class),
+                            ['code' => $locationErrorCode],
+                        )
+                        : new Result(['LocationConstraint' => $location]),
                     'getBucketEncryption' => $encryptionErrorCode !== null
                         ? throw new \Aws\S3\Exception\S3Exception(
                             $encryptionErrorCode,
@@ -255,7 +335,13 @@ class AWSS3BucketCrawlerTest extends TestCase
                             ['code' => $encryptionErrorCode],
                         )
                         : new Result(['ServerSideEncryptionConfiguration' => []]),
-                    'getBucketVersioning' => new Result(['Status' => $versioningStatus]),
+                    'getBucketVersioning' => $versioningErrorCode !== null
+                        ? throw new \Aws\S3\Exception\S3Exception(
+                            $versioningErrorCode,
+                            $this->createMock(\Aws\CommandInterface::class),
+                            ['code' => $versioningErrorCode],
+                        )
+                        : new Result(['Status' => $versioningStatus]),
                     default => new Result([]),
                 };
             });

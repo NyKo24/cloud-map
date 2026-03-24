@@ -60,8 +60,12 @@ class AWSS3BucketCrawler extends AWSBaseCrawler
             $region = $location->get('LocationConstraint');
             // Empty string means us-east-1
             $s3Bucket->setRegion($region ?: 'us-east-1');
-        } catch (\Exception $e) {
-            // Access might be denied, continue crawling
+        } catch (S3Exception $e) {
+            // Access denied or other AWS errors — leave as null (unknown)
+            $this->logger?->warning('Failed to fetch S3 bucket location for "{bucket}": {error}', [
+                'bucket' => $s3Bucket->getName(),
+                'error' => $e->getAwsErrorCode() ?? $e->getMessage(),
+            ]);
         }
     }
 
@@ -94,8 +98,12 @@ class AWSS3BucketCrawler extends AWSBaseCrawler
             ]);
 
             $s3Bucket->setVersioningStatus($versioning->get('Status') ?? 'Disabled');
-        } catch (\Exception $e) {
-            // Access might be denied, continue crawling
+        } catch (S3Exception $e) {
+            // Access denied or other AWS errors — leave as null (unknown)
+            $this->logger?->warning('Failed to fetch S3 bucket versioning for "{bucket}": {error}', [
+                'bucket' => $s3Bucket->getName(),
+                'error' => $e->getAwsErrorCode() ?? $e->getMessage(),
+            ]);
         }
     }
 
