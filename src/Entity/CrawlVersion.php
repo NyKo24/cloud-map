@@ -13,6 +13,7 @@ use App\Entity\AWS\IAM\IamRole;
 use App\Entity\AWS\IAM\IamUser;
 use App\Entity\AWS\Lambda\LambdaFunction;
 use App\Entity\AWS\RDS\RdsInstance;
+use App\Entity\AWS\Route53\HostedZone;
 use App\Entity\AWS\S3\S3Bucket;
 use App\Entity\AWS\VPC\Vpc;
 use App\Repository\CrawlVersionRepository;
@@ -113,6 +114,12 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: LoadBalancer::class, mappedBy: 'crawl')]
     private Collection $loadBalancers;
 
+    /**
+     * @var Collection<int, HostedZone>
+     */
+    #[ORM\OneToMany(targetEntity: HostedZone::class, mappedBy: 'crawl')]
+    private Collection $hostedZones;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -128,6 +135,7 @@ class CrawlVersion
         $this->ecsClusters = new ArrayCollection();
         $this->eksClusters = new ArrayCollection();
         $this->loadBalancers = new ArrayCollection();
+        $this->hostedZones = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -532,6 +540,35 @@ class CrawlVersion
         if ($this->loadBalancers->removeElement($loadBalancer)) {
             if ($loadBalancer->getCrawl() === $this) {
                 $loadBalancer->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, HostedZone>
+     */
+    public function getHostedZones(): Collection
+    {
+        return $this->hostedZones;
+    }
+
+    public function addHostedZone(HostedZone $hostedZone): static
+    {
+        if (!$this->hostedZones->contains($hostedZone)) {
+            $this->hostedZones->add($hostedZone);
+            $hostedZone->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHostedZone(HostedZone $hostedZone): static
+    {
+        if ($this->hostedZones->removeElement($hostedZone)) {
+            if ($hostedZone->getCrawl() === $this) {
+                $hostedZone->setCrawl(null);
             }
         }
 
