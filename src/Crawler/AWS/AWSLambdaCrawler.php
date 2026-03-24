@@ -9,11 +9,6 @@ use Aws\Lambda\LambdaClient;
 
 class AWSLambdaCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $lambdaClient = $this->createLambdaClient($credentials, $regionName);

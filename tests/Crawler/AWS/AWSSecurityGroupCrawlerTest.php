@@ -25,18 +25,6 @@ class AWSSecurityGroupCrawlerTest extends TestCase
         $this->denormalizer = $this->createMock(DenormalizerInterface::class);
     }
 
-    public function testIsNotGlobal(): void
-    {
-        $crawler = new AWSSecurityGroupCrawler(
-            $this->createMock(ManagerRegistry::class),
-            $this->entityManager,
-            $this->createMock(SerializerInterface::class),
-            $this->denormalizer,
-        );
-
-        $this->assertFalse($crawler->isGlobal());
-    }
-
     public function testCrawlDenormalizesSecurityGroupsAndPersists(): void
     {
         $sgData = [

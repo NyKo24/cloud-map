@@ -9,11 +9,6 @@ use Aws\ElasticLoadBalancingV2\ElasticLoadBalancingV2Client;
 
 class AWSLoadBalancerCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $elbClient = $this->createElbClient($credentials, $regionName);

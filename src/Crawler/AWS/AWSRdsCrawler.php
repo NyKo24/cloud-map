@@ -9,11 +9,6 @@ use Aws\Rds\RdsClient;
 
 class AWSRdsCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $rdsClient = $this->createRdsClient($credentials, $regionName);

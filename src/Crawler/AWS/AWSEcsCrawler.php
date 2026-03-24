@@ -9,11 +9,6 @@ use Aws\Ecs\EcsClient;
 
 class AWSEcsCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $ecsClient = $this->createEcsClient($credentials, $regionName);

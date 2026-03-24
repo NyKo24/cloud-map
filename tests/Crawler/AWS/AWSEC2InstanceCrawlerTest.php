@@ -33,11 +33,6 @@ class AWSEC2InstanceCrawlerTest extends TestCase
         );
     }
 
-    public function testIsNotGlobal(): void
-    {
-        $this->assertFalse($this->crawler->isGlobal());
-    }
-
     public function testCrawlDenormalizesInstancesAndPersists(): void
     {
         $instanceData = [

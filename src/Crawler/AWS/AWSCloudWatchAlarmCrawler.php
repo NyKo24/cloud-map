@@ -9,11 +9,6 @@ use Aws\Credentials\Credentials;
 
 class AWSCloudWatchAlarmCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $cloudWatchClient = $this->createCloudWatchClient($credentials, $regionName);

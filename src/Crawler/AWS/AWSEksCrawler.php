@@ -9,11 +9,6 @@ use Aws\EKS\EKSClient;
 
 class AWSEksCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $eksClient = $this->createEksClient($credentials, $regionName);
