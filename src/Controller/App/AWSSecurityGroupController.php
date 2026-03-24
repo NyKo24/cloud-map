@@ -83,7 +83,10 @@ final class AWSSecurityGroupController extends AbstractController
     #[Route('/aws/security-groups/{id}', name: 'app_aws_security_groups_show')]
     public function show(int $id, SecurityGroupRepository $securityGroupRepository): Response
     {
-        $securityGroup = $securityGroupRepository->find($id);
+        /** @var User $user */
+        $user = $this->getUser();
+
+        $securityGroup = $securityGroupRepository->findOneForUser($id, $user->getId());
 
         if (!$securityGroup) {
             throw $this->createNotFoundException('Security Group not found');

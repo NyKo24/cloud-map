@@ -18,6 +18,20 @@ class SecurityGroupRepository extends ServiceEntityRepository
         parent::__construct($registry, SecurityGroup::class);
     }
 
+    public function findOneForUser(int $id, int $userId): ?SecurityGroup
+    {
+        return $this->createQueryBuilder('sg')
+            ->join('sg.crawl', 'cv')
+            ->join('cv.customer', 'c')
+            ->innerJoin('c.users', 'u')
+            ->where('sg.id = :id')
+            ->andWhere('u.id = :user')
+            ->setParameter('id', $id)
+            ->setParameter('user', $userId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function listSecurityGroupsForUser(SecurityGroupListSearch $search): QueryBuilder
     {
         $qb = $this->createQueryBuilder('sg')
