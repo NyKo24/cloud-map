@@ -9,7 +9,6 @@ use App\Crawler\AWS\AWSEksCrawler;
 use App\Crawler\AWS\AWSIamCrawler;
 use App\Crawler\AWS\AWSLambdaCrawler;
 use App\Crawler\AWS\AWSLoadBalancerCrawler;
-use App\Crawler\AWS\AWSRdsCrawler;
 use App\Crawler\AWS\AWSS3BucketCrawler;
 use App\Crawler\AWS\AWSSecurityGroupCrawler;
 use App\Crawler\AWS\AWSVpcCrawler;
@@ -48,18 +47,6 @@ class ExistingCrawlersTest extends TestCase
     public function testEc2InstanceCrawlerIsNotGlobal(): void
     {
         $crawler = new AWSEC2InstanceCrawler(
-            $this->createMock(ManagerRegistry::class),
-            $this->createMock(EntityManagerInterface::class),
-            $this->createMock(SerializerInterface::class),
-            $this->createMock(DenormalizerInterface::class),
-        );
-
-        $this->assertFalse($crawler->isGlobal());
-    }
-
-    public function testRdsCrawlerIsNotGlobal(): void
-    {
-        $crawler = new AWSRdsCrawler(
             $this->createMock(ManagerRegistry::class),
             $this->createMock(EntityManagerInterface::class),
             $this->createMock(SerializerInterface::class),
