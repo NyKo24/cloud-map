@@ -5,6 +5,8 @@ namespace App\Entity;
 use App\Entity\AWS\AwsAccount;
 use App\Entity\AWS\EC2\Ec2Instance;
 use App\Entity\AWS\EC2\SecurityGroup;
+use App\Entity\AWS\IAM\IamRole;
+use App\Entity\AWS\IAM\IamUser;
 use App\Entity\AWS\Lambda\LambdaFunction;
 use App\Entity\AWS\RDS\RdsInstance;
 use App\Entity\AWS\S3\S3Bucket;
@@ -71,6 +73,18 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: S3Bucket::class, mappedBy: 'crawl')]
     private Collection $s3Buckets;
 
+    /**
+     * @var Collection<int, IamRole>
+     */
+    #[ORM\OneToMany(targetEntity: IamRole::class, mappedBy: 'crawl')]
+    private Collection $iamRoles;
+
+    /**
+     * @var Collection<int, IamUser>
+     */
+    #[ORM\OneToMany(targetEntity: IamUser::class, mappedBy: 'crawl')]
+    private Collection $iamUsers;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -80,6 +94,8 @@ class CrawlVersion
         $this->rdsInstances = new ArrayCollection();
         $this->securityGroups = new ArrayCollection();
         $this->s3Buckets = new ArrayCollection();
+        $this->iamRoles = new ArrayCollection();
+        $this->iamUsers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -310,6 +326,64 @@ class CrawlVersion
         if ($this->s3Buckets->removeElement($s3Bucket)) {
             if ($s3Bucket->getCrawl() === $this) {
                 $s3Bucket->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, IamRole>
+     */
+    public function getIamRoles(): Collection
+    {
+        return $this->iamRoles;
+    }
+
+    public function addIamRole(IamRole $iamRole): static
+    {
+        if (!$this->iamRoles->contains($iamRole)) {
+            $this->iamRoles->add($iamRole);
+            $iamRole->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIamRole(IamRole $iamRole): static
+    {
+        if ($this->iamRoles->removeElement($iamRole)) {
+            if ($iamRole->getCrawl() === $this) {
+                $iamRole->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, IamUser>
+     */
+    public function getIamUsers(): Collection
+    {
+        return $this->iamUsers;
+    }
+
+    public function addIamUser(IamUser $iamUser): static
+    {
+        if (!$this->iamUsers->contains($iamUser)) {
+            $this->iamUsers->add($iamUser);
+            $iamUser->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeIamUser(IamUser $iamUser): static
+    {
+        if ($this->iamUsers->removeElement($iamUser)) {
+            if ($iamUser->getCrawl() === $this) {
+                $iamUser->setCrawl(null);
             }
         }
 
