@@ -35,9 +35,8 @@ class SecurityGroupRepository extends ServiceEntityRepository
     public function listSecurityGroupsForUser(SecurityGroupListSearch $search): QueryBuilder
     {
         $qb = $this->createQueryBuilder('sg')
-            ->select('sg, cv, r')
+            ->select('sg, cv')
             ->join('sg.crawl', 'cv')
-            ->leftJoin('sg.rules', 'r')
             ->join('cv.customer', 'c')
             ->innerJoin('c.users', 'u')
             ->where('u.id = :user')
@@ -60,5 +59,14 @@ class SecurityGroupRepository extends ServiceEntityRepository
         }
 
         return $qb;
+    }
+
+    public function listSecurityGroupsWithRuleCountsForUser(SecurityGroupListSearch $search): QueryBuilder
+    {
+        return $this->listSecurityGroupsForUser($search)
+            ->addSelect('(SELECT COUNT(ri.id) FROM App\Entity\AWS\EC2\SecurityGroupRule ri WHERE ri.securityGroup = sg AND ri.direction = :ingress) AS ingressCount')
+            ->addSelect('(SELECT COUNT(re.id) FROM App\Entity\AWS\EC2\SecurityGroupRule re WHERE re.securityGroup = sg AND re.direction = :egress) AS egressCount')
+            ->setParameter('ingress', 'ingress')
+            ->setParameter('egress', 'egress');
     }
 }

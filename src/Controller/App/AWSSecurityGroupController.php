@@ -36,7 +36,7 @@ final class AWSSecurityGroupController extends AbstractController
             $search = $searchForm->getData();
         }
 
-        $qb = $securityGroupRepository->listSecurityGroupsForUser($search);
+        $qb = $securityGroupRepository->listSecurityGroupsWithRuleCountsForUser($search);
 
         $pagination = $paginator->paginate(
             $qb,
