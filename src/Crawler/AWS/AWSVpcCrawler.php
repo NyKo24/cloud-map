@@ -11,6 +11,11 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 
 class AWSVpcCrawler extends AWSBaseCrawler
 {
+    public function isGlobal(): bool
+    {
+        return false;
+    }
+
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $vpcClient = new Ec2Client([

@@ -17,6 +17,7 @@ class AWSCrawlerManager
     const AWS_REGIONS = [
       'eu-west-3'
     ];
+    const AWS_GLOBAL_REGION = 'us-east-1';
     /**
      * @param AWSCrawlerInterface[] $crawlers
      */
@@ -66,9 +67,13 @@ class AWSCrawlerManager
                 $accountCredentialsResult['Credentials']['SessionToken']
             );
 
-            foreach (self::AWS_REGIONS as $regionName) {
-                foreach ($this->crawlers as $crawler) {
-                    $crawler->crawl($accountCredentials, $regionName, $awsAccount->getAwsId(), $crawlerVersion);
+            foreach ($this->crawlers as $crawler) {
+                if ($crawler->isGlobal()) {
+                    $crawler->crawl($accountCredentials, self::AWS_GLOBAL_REGION, $awsAccount->getAwsId(), $crawlerVersion);
+                } else {
+                    foreach (self::AWS_REGIONS as $regionName) {
+                        $crawler->crawl($accountCredentials, $regionName, $awsAccount->getAwsId(), $crawlerVersion);
+                    }
                 }
             }
         }
