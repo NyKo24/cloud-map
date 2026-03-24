@@ -16,11 +16,7 @@ class AWSRdsCrawler extends AWSBaseCrawler
 
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
-        $rdsClient = new RdsClient([
-            'credentials' => $credentials,
-            'region' => $regionName,
-            'version' => 'latest'
-        ]);
+        $rdsClient = $this->createRdsClient($credentials, $regionName);
 
         $marker = null;
 
@@ -51,5 +47,14 @@ class AWSRdsCrawler extends AWSBaseCrawler
         } while ($marker);
 
         $this->entityManager->flush();
+    }
+
+    protected function createRdsClient(Credentials $credentials, string $regionName): RdsClient
+    {
+        return new RdsClient([
+            'credentials' => $credentials,
+            'region' => $regionName,
+            'version' => 'latest'
+        ]);
     }
 }

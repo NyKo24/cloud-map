@@ -156,7 +156,8 @@ class AWSRdsCrawlerTest extends TestCase
     }
 
     /**
-     * Creates a crawler subclass that uses a mock RdsClient instead of creating a real one.
+     * Creates a crawler that overrides createRdsClient() to inject a mock,
+     * so the real crawl() method is tested.
      *
      * @param Result[] $results Sequential results to return from describeDBInstances
      */
@@ -193,36 +194,9 @@ class AWSRdsCrawlerTest extends TestCase
                 $this->mockClient = $mockClient;
             }
 
-            public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
+            protected function createRdsClient(Credentials $credentials, string $regionName): RdsClient
             {
-                $rdsClient = $this->mockClient;
-
-                $marker = null;
-
-                do {
-                    $params = ['MaxRecords' => 100];
-
-                    if ($marker) {
-                        $params['Marker'] = $marker;
-                    }
-
-                    $result = $rdsClient->describeDBInstances($params);
-
-                    foreach ($result->get('DBInstances') as $instanceData) {
-                        /** @var \App\Entity\AWS\RDS\RdsInstance $rdsInstance */
-                        $rdsInstance = $this->denormalizer->denormalize($instanceData, RdsInstance::class, null, [
-                            'object_context' => RdsInstance::class,
-                        ]);
-
-                        $rdsInstance->setCrawl($crawlVersion);
-
-                        $this->entityManager->persist($rdsInstance);
-                    }
-
-                    $marker = $result->get('Marker');
-                } while ($marker);
-
-                $this->entityManager->flush();
+                return $this->mockClient;
             }
         };
     }
