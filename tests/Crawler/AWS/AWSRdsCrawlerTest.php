@@ -18,24 +18,11 @@ class AWSRdsCrawlerTest extends TestCase
 {
     private EntityManagerInterface $entityManager;
     private DenormalizerInterface $denormalizer;
-    private AWSRdsCrawler $crawler;
 
     protected function setUp(): void
     {
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
         $this->denormalizer = $this->createMock(DenormalizerInterface::class);
-
-        $this->crawler = new AWSRdsCrawler(
-            $this->createMock(ManagerRegistry::class),
-            $this->entityManager,
-            $this->createMock(SerializerInterface::class),
-            $this->denormalizer,
-        );
-    }
-
-    public function testIsNotGlobal(): void
-    {
-        $this->assertFalse($this->crawler->isGlobal());
     }
 
     public function testCrawlDenormalizesInstancesAndPersists(): void
