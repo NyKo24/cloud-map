@@ -1,0 +1,122 @@
+<turbo-frame id="aws-security-groups-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} security group(s) trouvé(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'Group ID', 'cssClass': 'group-id', checked: true },
+            { 'label': 'Group Name', 'cssClass': 'group-name', checked: true },
+            { 'label': 'Description', 'cssClass': 'description', checked: true },
+            { 'label': 'VPC ID', 'cssClass': 'vpc-id', checked: true },
+            { 'label': 'Owner ID', 'cssClass': 'owner-id', checked: true },
+            { 'label': 'Ingress Rules', 'cssClass': 'ingress-rules', checked: true },
+            { 'label': 'Egress Rules', 'cssClass': 'egress-rules', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-3 gap-4 items-end">
+            {{ form_row(searchForm.groupId) }}
+            {{ form_row(searchForm.groupName) }}
+            {{ form_row(searchForm.vpcId) }}
+        </div>
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_security_groups_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-group-id">{{ knp_pagination_sortable(pagination, 'Group ID', 'sg.groupId', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-group-name">{{ knp_pagination_sortable(pagination, 'Group Name', 'sg.groupName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-description">Description</th>
+                <th scope="col" class="px-6 py-3 column-vpc-id">{{ knp_pagination_sortable(pagination, 'VPC ID', 'sg.vpcId', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-owner-id">{{ knp_pagination_sortable(pagination, 'Owner ID', 'sg.ownerId', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-ingress-rules">Ingress</th>
+                <th scope="col" class="px-6 py-3 column-egress-rules">Egress</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for sg in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-group-id">
+                        <a href="{{ path('app_aws_security_groups_show', {id: sg.id}) }}" class="text-blue-600 hover:underline dark:text-blue-400">
+                            {{ sg.groupId }}
+                        </a>
+                    </th>
+                    <td class="px-6 py-4 column-group-name">
+                        {% if sg.groupName %}
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                {{ sg.groupName }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-description">
+                        {% if sg.description %}
+                            <span class="text-xs">{{ sg.description|length > 50 ? sg.description|slice(0, 50) ~ '...' : sg.description }}</span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-vpc-id">
+                        {% if sg.vpcId %}
+                            {{ sg.vpcId }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-owner-id">
+                        {% if sg.ownerId %}
+                            {{ sg.ownerId }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-ingress-rules">
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                            {{ sg.ingressRules|length }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 column-egress-rules">
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                            {{ sg.egressRules|length }}
+                        </span>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucun security group trouvé
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>

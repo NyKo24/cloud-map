@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Entity\AWS\AwsAccount;
 use App\Entity\AWS\EC2\Ec2Instance;
+use App\Entity\AWS\EC2\SecurityGroup;
 use App\Entity\AWS\Lambda\LambdaFunction;
 use App\Entity\AWS\RDS\RdsInstance;
 use App\Entity\AWS\VPC\Vpc;
@@ -57,6 +58,12 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: RdsInstance::class, mappedBy: 'crawl')]
     private Collection $rdsInstances;
 
+    /**
+     * @var Collection<int, SecurityGroup>
+     */
+    #[ORM\OneToMany(targetEntity: SecurityGroup::class, mappedBy: 'crawl')]
+    private Collection $securityGroups;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -64,6 +71,7 @@ class CrawlVersion
         $this->lambdaFunctions = new ArrayCollection();
         $this->ec2Instances = new ArrayCollection();
         $this->rdsInstances = new ArrayCollection();
+        $this->securityGroups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -236,6 +244,35 @@ class CrawlVersion
         if ($this->rdsInstances->removeElement($rdsInstance)) {
             if ($rdsInstance->getCrawl() === $this) {
                 $rdsInstance->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SecurityGroup>
+     */
+    public function getSecurityGroups(): Collection
+    {
+        return $this->securityGroups;
+    }
+
+    public function addSecurityGroup(SecurityGroup $securityGroup): static
+    {
+        if (!$this->securityGroups->contains($securityGroup)) {
+            $this->securityGroups->add($securityGroup);
+            $securityGroup->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSecurityGroup(SecurityGroup $securityGroup): static
+    {
+        if ($this->securityGroups->removeElement($securityGroup)) {
+            if ($securityGroup->getCrawl() === $this) {
+                $securityGroup->setCrawl(null);
             }
         }
 
