@@ -9,6 +9,7 @@ use App\Crawler\AWS\AWSEksCrawler;
 use App\Crawler\AWS\AWSIamCrawler;
 use App\Crawler\AWS\AWSLambdaCrawler;
 use App\Crawler\AWS\AWSLoadBalancerCrawler;
+use App\Crawler\AWS\AWSRoute53Crawler;
 use App\Crawler\AWS\AWSS3BucketCrawler;
 use App\Crawler\AWS\AWSSecurityGroupCrawler;
 use App\Crawler\AWS\AWSVpcCrawler;
@@ -138,5 +139,17 @@ class ExistingCrawlersTest extends TestCase
         );
 
         $this->assertFalse($crawler->isGlobal());
+    }
+
+    public function testRoute53CrawlerIsGlobal(): void
+    {
+        $crawler = new AWSRoute53Crawler(
+            $this->createMock(ManagerRegistry::class),
+            $this->createMock(EntityManagerInterface::class),
+            $this->createMock(SerializerInterface::class),
+            $this->createMock(DenormalizerInterface::class),
+        );
+
+        $this->assertTrue($crawler->isGlobal());
     }
 }
