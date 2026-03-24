@@ -7,6 +7,7 @@ use App\Entity\AWS\EC2\Ec2Instance;
 use App\Entity\AWS\EC2\SecurityGroup;
 use App\Entity\AWS\Lambda\LambdaFunction;
 use App\Entity\AWS\RDS\RdsInstance;
+use App\Entity\AWS\S3\S3Bucket;
 use App\Entity\AWS\VPC\Vpc;
 use App\Repository\CrawlVersionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -64,6 +65,12 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: SecurityGroup::class, mappedBy: 'crawl')]
     private Collection $securityGroups;
 
+    /**
+     * @var Collection<int, S3Bucket>
+     */
+    #[ORM\OneToMany(targetEntity: S3Bucket::class, mappedBy: 'crawl')]
+    private Collection $s3Buckets;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -72,6 +79,7 @@ class CrawlVersion
         $this->ec2Instances = new ArrayCollection();
         $this->rdsInstances = new ArrayCollection();
         $this->securityGroups = new ArrayCollection();
+        $this->s3Buckets = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -273,6 +281,35 @@ class CrawlVersion
         if ($this->securityGroups->removeElement($securityGroup)) {
             if ($securityGroup->getCrawl() === $this) {
                 $securityGroup->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, S3Bucket>
+     */
+    public function getS3Buckets(): Collection
+    {
+        return $this->s3Buckets;
+    }
+
+    public function addS3Bucket(S3Bucket $s3Bucket): static
+    {
+        if (!$this->s3Buckets->contains($s3Bucket)) {
+            $this->s3Buckets->add($s3Bucket);
+            $s3Bucket->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeS3Bucket(S3Bucket $s3Bucket): static
+    {
+        if ($this->s3Buckets->removeElement($s3Bucket)) {
+            if ($s3Bucket->getCrawl() === $this) {
+                $s3Bucket->setCrawl(null);
             }
         }
 
