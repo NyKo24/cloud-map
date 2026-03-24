@@ -76,4 +76,57 @@ class LoadBalancerTest extends TestCase
         $this->assertEquals('my-alb-123.eu-west-1.elb.amazonaws.com', $lb->getDnsName());
         $this->assertEquals('vpc-123', $lb->getVpcId());
     }
+
+    public function testCrawlVersionAddLoadBalancer(): void
+    {
+        $crawlVersion = new CrawlVersion();
+        $lb = new LoadBalancer();
+
+        $crawlVersion->addLoadBalancer($lb);
+
+        $this->assertCount(1, $crawlVersion->getLoadBalancers());
+        $this->assertSame($crawlVersion, $lb->getCrawl());
+    }
+
+    public function testCrawlVersionAddLoadBalancerDoesNotDuplicate(): void
+    {
+        $crawlVersion = new CrawlVersion();
+        $lb = new LoadBalancer();
+
+        $crawlVersion->addLoadBalancer($lb);
+        $crawlVersion->addLoadBalancer($lb);
+
+        $this->assertCount(1, $crawlVersion->getLoadBalancers());
+    }
+
+    public function testCrawlVersionRemoveLoadBalancer(): void
+    {
+        $crawlVersion = new CrawlVersion();
+        $lb = new LoadBalancer();
+
+        $crawlVersion->addLoadBalancer($lb);
+        $this->assertCount(1, $crawlVersion->getLoadBalancers());
+
+        $crawlVersion->removeLoadBalancer($lb);
+        $this->assertCount(0, $crawlVersion->getLoadBalancers());
+        $this->assertNull($lb->getCrawl());
+    }
+
+    public function testDefaultValues(): void
+    {
+        $lb = new LoadBalancer();
+
+        $this->assertNull($lb->getId());
+        $this->assertNull($lb->getLoadBalancerArn());
+        $this->assertNull($lb->getLoadBalancerName());
+        $this->assertNull($lb->getDnsName());
+        $this->assertNull($lb->getType());
+        $this->assertNull($lb->getScheme());
+        $this->assertNull($lb->getVpcId());
+        $this->assertNull($lb->getState());
+        $this->assertNull($lb->getCreatedTime());
+        $this->assertNull($lb->getAvailabilityZones());
+        $this->assertNull($lb->getIpAddressType());
+        $this->assertNull($lb->getCrawl());
+    }
 }
