@@ -8,6 +8,7 @@ use App\Entity\AWS\EC2\SecurityGroup;
 use App\Entity\AWS\CloudWatch\CloudWatchAlarm;
 use App\Entity\AWS\ECS\EcsCluster;
 use App\Entity\AWS\EKS\EksCluster;
+use App\Entity\AWS\ELB\LoadBalancer;
 use App\Entity\AWS\IAM\IamRole;
 use App\Entity\AWS\IAM\IamUser;
 use App\Entity\AWS\Lambda\LambdaFunction;
@@ -106,6 +107,12 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: EksCluster::class, mappedBy: 'crawl')]
     private Collection $eksClusters;
 
+    /**
+     * @var Collection<int, LoadBalancer>
+     */
+    #[ORM\OneToMany(targetEntity: LoadBalancer::class, mappedBy: 'crawl')]
+    private Collection $loadBalancers;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -120,6 +127,7 @@ class CrawlVersion
         $this->cloudWatchAlarms = new ArrayCollection();
         $this->ecsClusters = new ArrayCollection();
         $this->eksClusters = new ArrayCollection();
+        $this->loadBalancers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -495,6 +503,35 @@ class CrawlVersion
         if ($this->eksClusters->removeElement($eksCluster)) {
             if ($eksCluster->getCrawl() === $this) {
                 $eksCluster->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, LoadBalancer>
+     */
+    public function getLoadBalancers(): Collection
+    {
+        return $this->loadBalancers;
+    }
+
+    public function addLoadBalancer(LoadBalancer $loadBalancer): static
+    {
+        if (!$this->loadBalancers->contains($loadBalancer)) {
+            $this->loadBalancers->add($loadBalancer);
+            $loadBalancer->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLoadBalancer(LoadBalancer $loadBalancer): static
+    {
+        if ($this->loadBalancers->removeElement($loadBalancer)) {
+            if ($loadBalancer->getCrawl() === $this) {
+                $loadBalancer->setCrawl(null);
             }
         }
 
