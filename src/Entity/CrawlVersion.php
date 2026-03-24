@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Entity\AWS\AwsAccount;
+use App\Entity\AWS\EC2\Ec2Instance;
 use App\Entity\AWS\Lambda\LambdaFunction;
 use App\Entity\AWS\VPC\Vpc;
 use App\Repository\CrawlVersionRepository;
@@ -43,11 +44,18 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: LambdaFunction::class, mappedBy: 'crawl')]
     private Collection $lambdaFunctions;
 
+    /**
+     * @var Collection<int, Ec2Instance>
+     */
+    #[ORM\OneToMany(targetEntity: Ec2Instance::class, mappedBy: 'crawl')]
+    private Collection $ec2Instances;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
         $this->vpcs = new ArrayCollection();
         $this->lambdaFunctions = new ArrayCollection();
+        $this->ec2Instances = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -162,6 +170,35 @@ class CrawlVersion
         if ($this->lambdaFunctions->removeElement($lambdaFunction)) {
             if ($lambdaFunction->getCrawl() === $this) {
                 $lambdaFunction->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ec2Instance>
+     */
+    public function getEc2Instances(): Collection
+    {
+        return $this->ec2Instances;
+    }
+
+    public function addEc2Instance(Ec2Instance $ec2Instance): static
+    {
+        if (!$this->ec2Instances->contains($ec2Instance)) {
+            $this->ec2Instances->add($ec2Instance);
+            $ec2Instance->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEc2Instance(Ec2Instance $ec2Instance): static
+    {
+        if ($this->ec2Instances->removeElement($ec2Instance)) {
+            if ($ec2Instance->getCrawl() === $this) {
+                $ec2Instance->setCrawl(null);
             }
         }
 
