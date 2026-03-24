@@ -16,11 +16,7 @@ class AWSEC2InstanceCrawler extends AWSBaseCrawler
 
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
-        $ec2Client = new Ec2Client([
-            'credentials' => $credentials,
-            'region' => $regionName,
-            'version' => 'latest'
-        ]);
+        $ec2Client = $this->createEc2Client($credentials, $regionName);
 
         $nextToken = null;
 
@@ -53,5 +49,14 @@ class AWSEC2InstanceCrawler extends AWSBaseCrawler
         } while ($nextToken);
 
         $this->entityManager->flush();
+    }
+
+    protected function createEc2Client(Credentials $credentials, string $regionName): Ec2Client
+    {
+        return new Ec2Client([
+            'credentials' => $credentials,
+            'region' => $regionName,
+            'version' => 'latest',
+        ]);
     }
 }

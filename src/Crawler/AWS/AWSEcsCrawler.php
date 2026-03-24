@@ -16,11 +16,7 @@ class AWSEcsCrawler extends AWSBaseCrawler
 
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
-        $ecsClient = new EcsClient([
-            'credentials' => $credentials,
-            'region' => $regionName,
-            'version' => 'latest',
-        ]);
+        $ecsClient = $this->createEcsClient($credentials, $regionName);
 
         $nextToken = null;
 
@@ -56,5 +52,14 @@ class AWSEcsCrawler extends AWSBaseCrawler
         } while ($nextToken);
 
         $this->entityManager->flush();
+    }
+
+    protected function createEcsClient(Credentials $credentials, string $regionName): EcsClient
+    {
+        return new EcsClient([
+            'credentials' => $credentials,
+            'region' => $regionName,
+            'version' => 'latest',
+        ]);
     }
 }

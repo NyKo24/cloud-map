@@ -18,11 +18,7 @@ class AWSVpcCrawler extends AWSBaseCrawler
 
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
-        $vpcClient = new Ec2Client([
-            'credentials' => $credentials,
-            'region' => $regionName,
-            'version' => 'latest'
-        ]);
+        $vpcClient = $this->createEc2Client($credentials, $regionName);
 
         $vpcs = $vpcClient->describeVpcs([
             'MaxResults' => 1000
@@ -44,6 +40,14 @@ class AWSVpcCrawler extends AWSBaseCrawler
         }
 
         $this->entityManager->flush();
+    }
 
+    protected function createEc2Client(Credentials $credentials, string $regionName): Ec2Client
+    {
+        return new Ec2Client([
+            'credentials' => $credentials,
+            'region' => $regionName,
+            'version' => 'latest',
+        ]);
     }
 }

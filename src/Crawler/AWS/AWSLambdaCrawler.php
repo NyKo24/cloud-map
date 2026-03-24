@@ -16,11 +16,7 @@ class AWSLambdaCrawler extends AWSBaseCrawler
 
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
-        $lambdaClient = new LambdaClient([
-            'credentials' => $credentials,
-            'region' => $regionName,
-            'version' => 'latest'
-        ]);
+        $lambdaClient = $this->createLambdaClient($credentials, $regionName);
 
         $nextMarker = null;
 
@@ -54,6 +50,15 @@ class AWSLambdaCrawler extends AWSBaseCrawler
         } while ($nextMarker);
 
         $this->entityManager->flush();
+    }
+
+    protected function createLambdaClient(Credentials $credentials, string $regionName): LambdaClient
+    {
+        return new LambdaClient([
+            'credentials' => $credentials,
+            'region' => $regionName,
+            'version' => 'latest',
+        ]);
     }
 
     private function crawlFunctionTags(LambdaClient $lambdaClient, LambdaFunction $lambdaFunction): void

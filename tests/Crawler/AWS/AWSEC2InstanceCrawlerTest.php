@@ -161,7 +161,8 @@ class AWSEC2InstanceCrawlerTest extends TestCase
     }
 
     /**
-     * Creates a crawler subclass that uses a mock Ec2Client instead of creating a real one.
+     * Creates a crawler that overrides createEc2Client() to inject a mock,
+     * so the real crawl() method is tested.
      *
      * @param Result[] $results Sequential results to return from describeInstances
      */
@@ -198,38 +199,9 @@ class AWSEC2InstanceCrawlerTest extends TestCase
                 $this->mockClient = $mockClient;
             }
 
-            public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
+            protected function createEc2Client(Credentials $credentials, string $regionName): Ec2Client
             {
-                $ec2Client = $this->mockClient;
-
-                $nextToken = null;
-
-                do {
-                    $params = ['MaxResults' => 1000];
-
-                    if ($nextToken) {
-                        $params['NextToken'] = $nextToken;
-                    }
-
-                    $result = $ec2Client->describeInstances($params);
-
-                    foreach ($result->get('Reservations') as $reservation) {
-                        foreach ($reservation['Instances'] as $instanceData) {
-                            /** @var \App\Entity\AWS\EC2\Ec2Instance $ec2Instance */
-                            $ec2Instance = $this->denormalizer->denormalize($instanceData, Ec2Instance::class, null, [
-                                'object_context' => Ec2Instance::class,
-                            ]);
-
-                            $ec2Instance->setCrawl($crawlVersion);
-
-                            $this->entityManager->persist($ec2Instance);
-                        }
-                    }
-
-                    $nextToken = $result->get('NextToken');
-                } while ($nextToken);
-
-                $this->entityManager->flush();
+                return $this->mockClient;
             }
         };
     }
