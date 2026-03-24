@@ -10,4 +10,6 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 interface AWSCrawlerInterface
 {
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void;
+
+    public function isGlobal(): bool;
 }

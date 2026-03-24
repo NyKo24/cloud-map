@@ -16,4 +16,9 @@ abstract class AWSBaseCrawler implements AWSCrawlerInterface
         protected DenormalizerInterface $denormalizer
     )
     {}
+
+    public function isGlobal(): bool
+    {
+        return false;
+    }
 }
