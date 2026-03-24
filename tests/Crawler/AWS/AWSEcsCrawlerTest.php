@@ -178,35 +178,9 @@ class AWSEcsCrawlerTest extends TestCase
                 $this->mockClient = $mockClient;
             }
 
-            public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
+            protected function createEcsClient(Credentials $credentials, string $regionName): EcsClient
             {
-                $ecsClient = $this->mockClient;
-                $nextToken = null;
-
-                do {
-                    $params = [];
-                    if ($nextToken) {
-                        $params['nextToken'] = $nextToken;
-                    }
-
-                    $result = $ecsClient->listClusters($params);
-                    $clusterArns = $result->get('clusterArns') ?? [];
-
-                    if (!empty($clusterArns)) {
-                        $described = $ecsClient->describeClusters(['clusters' => $clusterArns]);
-                        foreach ($described->get('clusters') ?? [] as $clusterData) {
-                            $cluster = $this->denormalizer->denormalize($clusterData, EcsCluster::class, null, [
-                                'object_context' => EcsCluster::class,
-                            ]);
-                            $cluster->setCrawl($crawlVersion);
-                            $this->entityManager->persist($cluster);
-                        }
-                    }
-
-                    $nextToken = $result->get('nextToken');
-                } while ($nextToken);
-
-                $this->entityManager->flush();
+                return $this->mockClient;
             }
         };
     }
