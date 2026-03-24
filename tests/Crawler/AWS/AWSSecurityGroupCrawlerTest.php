@@ -214,6 +214,94 @@ class AWSSecurityGroupCrawlerTest extends TestCase
         $this->assertEquals('ingress', $rule->getDirection());
     }
 
+    public function testCrawlCreatesRulesWithBothIpv4AndIpv6Ranges(): void
+    {
+        $sgData = [
+            'GroupId' => 'sg-mixed',
+            'GroupName' => 'mixed-sg',
+            'IpPermissions' => [
+                [
+                    'IpProtocol' => 'tcp',
+                    'FromPort' => 443,
+                    'ToPort' => 443,
+                    'IpRanges' => [
+                        ['CidrIp' => '10.0.0.0/8'],
+                        ['CidrIp' => '172.16.0.0/12'],
+                    ],
+                    'Ipv6Ranges' => [
+                        ['CidrIpv6' => '::/0'],
+                    ],
+                ],
+            ],
+            'IpPermissionsEgress' => [],
+        ];
+
+        $securityGroup = new SecurityGroup();
+
+        $this->denormalizer->expects($this->once())
+            ->method('denormalize')
+            ->willReturn($securityGroup);
+
+        $mockResult = new Result([
+            'SecurityGroups' => [$sgData],
+            'NextToken' => null,
+        ]);
+
+        $crawler = $this->createCrawlerWithMockClient([$mockResult]);
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+
+        $this->assertCount(3, $securityGroup->getRules());
+        $this->assertCount(3, $securityGroup->getIngressRules());
+        $this->assertCount(0, $securityGroup->getEgressRules());
+
+        $cidrs = [];
+        foreach ($securityGroup->getRules() as $rule) {
+            $cidrs[] = $rule->getSource();
+        }
+        $this->assertContains('10.0.0.0/8', $cidrs);
+        $this->assertContains('172.16.0.0/12', $cidrs);
+        $this->assertContains('::/0', $cidrs);
+    }
+
+    public function testCrawlCreatesRuleWithNoIpRanges(): void
+    {
+        $sgData = [
+            'GroupId' => 'sg-norng',
+            'GroupName' => 'no-range-sg',
+            'IpPermissions' => [
+                [
+                    'IpProtocol' => '-1',
+                    'IpRanges' => [],
+                    'Ipv6Ranges' => [],
+                ],
+            ],
+            'IpPermissionsEgress' => [],
+        ];
+
+        $securityGroup = new SecurityGroup();
+
+        $this->denormalizer->expects($this->once())
+            ->method('denormalize')
+            ->willReturn($securityGroup);
+
+        $mockResult = new Result([
+            'SecurityGroups' => [$sgData],
+            'NextToken' => null,
+        ]);
+
+        $crawler = $this->createCrawlerWithMockClient([$mockResult]);
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+
+        $this->assertCount(1, $securityGroup->getRules());
+        $rule = $securityGroup->getRules()->first();
+        $this->assertEquals('-1', $rule->getIpProtocol());
+        $this->assertNull($rule->getCidrIp());
+        $this->assertNull($rule->getCidrIpv6());
+        $this->assertNull($rule->getFromPort());
+        $this->assertNull($rule->getToPort());
+        $this->assertEquals('ingress', $rule->getDirection());
+    }
+
     /**
      * @param Result[] $results Sequential results to return from describeSecurityGroups
      */
