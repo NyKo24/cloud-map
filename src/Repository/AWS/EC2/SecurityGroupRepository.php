@@ -35,8 +35,9 @@ class SecurityGroupRepository extends ServiceEntityRepository
     public function listSecurityGroupsForUser(SecurityGroupListSearch $search): QueryBuilder
     {
         $qb = $this->createQueryBuilder('sg')
-            ->select('sg, cv')
+            ->select('sg, cv, r')
             ->join('sg.crawl', 'cv')
+            ->leftJoin('sg.rules', 'r')
             ->join('cv.customer', 'c')
             ->innerJoin('c.users', 'u')
             ->where('u.id = :user')
