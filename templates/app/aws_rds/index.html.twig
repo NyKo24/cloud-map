@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}RDS Instances - Liste{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <turbo-frame id="aws-rds-list-frame" src="{{ path('app_aws_rds_list_frame', app.request.query.all) }}">
+
+        <div role="status" class="space-y-4 animate-pulse dark:divide-gray-700 max-w-full">
+            <!-- Header (nb instances) -->
+            <div class="h-4 w-40 bg-gray-300 rounded dark:bg-gray-600 mb-3"></div>
+
+            <!-- Form Fields Skeleton -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+            </div>
+
+            <!-- Buttons Skeleton -->
+            <div class="flex gap-4 mt-3">
+                <div class="h-10 w-32 bg-gray-300 rounded-lg dark:bg-gray-700"></div>
+                <div class="h-10 w-32 bg-gray-300 rounded-lg dark:bg-gray-700"></div>
+            </div>
+
+            <!-- Dropdown Columns (placeholder) -->
+            <div class="h-6 w-64 bg-gray-200 rounded dark:bg-gray-700 mt-3"></div>
+
+            <!-- Table Headers -->
+            <div class="grid grid-cols-10 gap-4 bg-gray-50 dark:bg-gray-700 px-6 py-3 rounded">
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+            </div>
+
+            <!-- Table Rows -->
+            <div class="space-y-2">
+                {% for i in 0..5 %}
+                    <div class="grid grid-cols-10 gap-4 bg-white dark:bg-gray-800 p-4 rounded border dark:border-gray-700">
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <span class="sr-only">Loading...</span>
+        </div>
+
+    </turbo-frame>
+{% endblock %}

@@ -1,0 +1,173 @@
+<turbo-frame id="aws-rds-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} instance(s) RDS trouvée(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'DB Instance ID', 'cssClass': 'db-instance-id', checked: true },
+            { 'label': 'Engine', 'cssClass': 'engine', checked: true },
+            { 'label': 'Version', 'cssClass': 'engine-version', checked: true },
+            { 'label': 'Instance Class', 'cssClass': 'instance-class', checked: true },
+            { 'label': 'Status', 'cssClass': 'status', checked: true },
+            { 'label': 'Storage', 'cssClass': 'storage', checked: true },
+            { 'label': 'Multi-AZ', 'cssClass': 'multi-az', checked: true },
+            { 'label': 'Endpoint', 'cssClass': 'endpoint', checked: true },
+            { 'label': 'Public', 'cssClass': 'publicly-accessible', checked: true },
+            { 'label': 'Created', 'cssClass': 'create-time', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-4 gap-4 items-end">
+            {{ form_row(searchForm.dbInstanceIdentifier) }}
+            {{ form_row(searchForm.engine) }}
+            {{ form_row(searchForm.dbInstanceStatus) }}
+            {{ form_row(searchForm.dbInstanceClass) }}
+        </div>
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_rds_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-db-instance-id">{{ knp_pagination_sortable(pagination, 'DB Instance ID', 'ri.dbInstanceIdentifier', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-engine">{{ knp_pagination_sortable(pagination, 'Engine', 'ri.engine', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-engine-version">{{ knp_pagination_sortable(pagination, 'Version', 'ri.engineVersion', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-instance-class">{{ knp_pagination_sortable(pagination, 'Instance Class', 'ri.dbInstanceClass', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-status">{{ knp_pagination_sortable(pagination, 'Status', 'ri.dbInstanceStatus', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-storage">{{ knp_pagination_sortable(pagination, 'Storage (GB)', 'ri.allocatedStorage', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-multi-az">Multi-AZ</th>
+                <th scope="col" class="px-6 py-3 column-endpoint">Endpoint</th>
+                <th scope="col" class="px-6 py-3 column-publicly-accessible">Public</th>
+                <th scope="col" class="px-6 py-3 column-create-time">{{ knp_pagination_sortable(pagination, 'Created', 'ri.instanceCreateTime', [], app.request.query.all) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for instance in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-db-instance-id">
+                        {{ instance.dbInstanceIdentifier }}
+                    </th>
+                    <td class="px-6 py-4 column-engine">
+                        {% if instance.engine %}
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                {{ instance.engine }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-engine-version">
+                        {% if instance.engineVersion %}
+                            {{ instance.engineVersion }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-instance-class">
+                        {% if instance.dbInstanceClass %}
+                            <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">
+                                {{ instance.dbInstanceClass }}
+                            </span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-status">
+                        {% if instance.dbInstanceStatus %}
+                            {% if instance.dbInstanceStatus == 'available' %}
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                    {{ instance.dbInstanceStatus }}
+                                </span>
+                            {% elseif instance.dbInstanceStatus == 'stopped' %}
+                                <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                    {{ instance.dbInstanceStatus }}
+                                </span>
+                            {% elseif instance.dbInstanceStatus == 'failed' %}
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-900 dark:text-gray-300">
+                                    {{ instance.dbInstanceStatus }}
+                                </span>
+                            {% else %}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                                    {{ instance.dbInstanceStatus }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-storage">
+                        {% if instance.allocatedStorage is not null %}
+                            {{ instance.allocatedStorage }} GB
+                            {% if instance.storageType %}
+                                <span class="text-xs text-gray-400">({{ instance.storageType }})</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-multi-az">
+                        {% if instance.multiAZ %}
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">Yes</span>
+                        {% else %}
+                            <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-900 dark:text-gray-300">No</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-endpoint">
+                        {% if instance.endpointAddress %}
+                            <span class="text-xs">{{ instance.endpointAddress }}:{{ instance.endpointPort }}</span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-publicly-accessible">
+                        {% if instance.publiclyAccessible %}
+                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Yes</span>
+                        {% else %}
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">No</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-create-time">
+                        {% if instance.instanceCreateTime %}
+                            {{ instance.instanceCreateTime|date('d/m/Y H:i:s') }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="10" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucune instance RDS trouvée
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>

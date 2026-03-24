@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Entity\AWS\AwsAccount;
 use App\Entity\AWS\EC2\Ec2Instance;
 use App\Entity\AWS\Lambda\LambdaFunction;
+use App\Entity\AWS\RDS\RdsInstance;
 use App\Entity\AWS\VPC\Vpc;
 use App\Repository\CrawlVersionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -50,12 +51,19 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: Ec2Instance::class, mappedBy: 'crawl')]
     private Collection $ec2Instances;
 
+    /**
+     * @var Collection<int, RdsInstance>
+     */
+    #[ORM\OneToMany(targetEntity: RdsInstance::class, mappedBy: 'crawl')]
+    private Collection $rdsInstances;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
         $this->vpcs = new ArrayCollection();
         $this->lambdaFunctions = new ArrayCollection();
         $this->ec2Instances = new ArrayCollection();
+        $this->rdsInstances = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -199,6 +207,35 @@ class CrawlVersion
         if ($this->ec2Instances->removeElement($ec2Instance)) {
             if ($ec2Instance->getCrawl() === $this) {
                 $ec2Instance->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RdsInstance>
+     */
+    public function getRdsInstances(): Collection
+    {
+        return $this->rdsInstances;
+    }
+
+    public function addRdsInstance(RdsInstance $rdsInstance): static
+    {
+        if (!$this->rdsInstances->contains($rdsInstance)) {
+            $this->rdsInstances->add($rdsInstance);
+            $rdsInstance->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRdsInstance(RdsInstance $rdsInstance): static
+    {
+        if ($this->rdsInstances->removeElement($rdsInstance)) {
+            if ($rdsInstance->getCrawl() === $this) {
+                $rdsInstance->setCrawl(null);
             }
         }
 

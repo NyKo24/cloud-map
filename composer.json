@@ -103,6 +103,7 @@
         },
         "aws/aws-sdk-php": [
             "Ec2",
+            "Rds",
             "Sts"
         ]
     },
