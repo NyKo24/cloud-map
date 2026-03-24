@@ -38,7 +38,7 @@ class IamRole
     #[Groups(['iam_role_list_export'])]
     private ?string $arn = null;
 
-    #[ORM\Column(type: 'string', nullable: true)]
+    #[ORM\Column(type: 'string', length: 512, nullable: true)]
     #[SerializedName('Path')]
     #[Assert\Length(max: 512)]
     #[Groups(['iam_role_list_export'])]

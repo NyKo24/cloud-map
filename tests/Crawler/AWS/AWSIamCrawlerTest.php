@@ -164,6 +164,34 @@ class AWSIamCrawlerTest extends TestCase
         $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
     }
 
+    public function testCrawlHandlesPaginatedUsers(): void
+    {
+        $userData1 = ['UserName' => 'user-page1', 'UserId' => 'AIDA1'];
+        $userData2 = ['UserName' => 'user-page2', 'UserId' => 'AIDA2'];
+
+        $user1 = new IamUser();
+        $user2 = new IamUser();
+
+        $this->denormalizer->expects($this->exactly(2))
+            ->method('denormalize')
+            ->willReturnOnConsecutiveCalls($user1, $user2);
+
+        $this->entityManager->expects($this->exactly(2))
+            ->method('persist');
+
+        $this->entityManager->expects($this->once())
+            ->method('flush');
+
+        $crawler = $this->createCrawlerWithPaginatedUsers(
+            [],
+            [
+                ['users' => [$userData1], 'isTruncated' => true, 'marker' => 'page2-marker'],
+                ['users' => [$userData2], 'isTruncated' => false, 'marker' => null],
+            ]
+        );
+        $crawler->crawl(new Credentials('k', 's', 't'), 'us-east-1', '123', new CrawlVersion());
+    }
+
     private function createCrawlerWithMockClient(
         array $roles,
         array $users,
@@ -210,6 +238,36 @@ class AWSIamCrawlerTest extends TestCase
                     return new Result([
                         'Users' => $users,
                         'IsTruncated' => false,
+                    ]);
+                }
+                return new Result([]);
+            });
+
+        return $this->buildCrawlerWithClient($iamClient);
+    }
+
+    private function createCrawlerWithPaginatedUsers(
+        array $roles,
+        array $userPages,
+    ): AWSIamCrawler {
+        $iamClient = $this->createMock(IamClient::class);
+        $callIndex = 0;
+
+        $iamClient->method('__call')
+            ->willReturnCallback(function (string $method, array $args) use ($roles, $userPages, &$callIndex) {
+                if ($method === 'listRoles') {
+                    return new Result([
+                        'Roles' => $roles,
+                        'IsTruncated' => false,
+                    ]);
+                }
+                if ($method === 'listUsers') {
+                    $page = $userPages[$callIndex] ?? ['users' => [], 'isTruncated' => false, 'marker' => null];
+                    $callIndex++;
+                    return new Result([
+                        'Users' => $page['users'],
+                        'IsTruncated' => $page['isTruncated'],
+                        'Marker' => $page['marker'],
                     ]);
                 }
                 return new Result([]);
