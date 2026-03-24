@@ -9,11 +9,6 @@ use Aws\Ec2\Ec2Client;
 
 class AWSEC2InstanceCrawler extends AWSBaseCrawler
 {
-    public function isGlobal(): bool
-    {
-        return false;
-    }
-
     public function crawl(Credentials $credentials, string $regionName, string $accountId, CrawlVersion $crawlVersion): void
     {
         $ec2Client = $this->createEc2Client($credentials, $regionName);

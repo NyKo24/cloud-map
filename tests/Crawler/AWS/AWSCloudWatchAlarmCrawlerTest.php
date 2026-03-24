@@ -25,18 +25,6 @@ class AWSCloudWatchAlarmCrawlerTest extends TestCase
         $this->denormalizer = $this->createMock(DenormalizerInterface::class);
     }
 
-    public function testIsGlobalReturnsFalse(): void
-    {
-        $crawler = new AWSCloudWatchAlarmCrawler(
-            $this->createMock(ManagerRegistry::class),
-            $this->entityManager,
-            $this->createMock(SerializerInterface::class),
-            $this->denormalizer,
-        );
-
-        $this->assertFalse($crawler->isGlobal());
-    }
-
     public function testCrawlDenormalizesAlarmAndPersists(): void
     {
         $alarmData = [

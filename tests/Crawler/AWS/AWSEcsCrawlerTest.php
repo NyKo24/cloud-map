@@ -25,18 +25,6 @@ class AWSEcsCrawlerTest extends TestCase
         $this->denormalizer = $this->createMock(DenormalizerInterface::class);
     }
 
-    public function testIsGlobalReturnsFalse(): void
-    {
-        $crawler = new AWSEcsCrawler(
-            $this->createMock(ManagerRegistry::class),
-            $this->entityManager,
-            $this->createMock(SerializerInterface::class),
-            $this->denormalizer,
-        );
-
-        $this->assertFalse($crawler->isGlobal());
-    }
-
     public function testCrawlDenormalizesClusterAndPersists(): void
     {
         $clusterData = [
