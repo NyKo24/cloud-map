@@ -6,6 +6,8 @@ use App\Entity\AWS\AwsAccount;
 use App\Entity\AWS\EC2\Ec2Instance;
 use App\Entity\AWS\EC2\SecurityGroup;
 use App\Entity\AWS\CloudWatch\CloudWatchAlarm;
+use App\Entity\AWS\ECS\EcsCluster;
+use App\Entity\AWS\EKS\EksCluster;
 use App\Entity\AWS\IAM\IamRole;
 use App\Entity\AWS\IAM\IamUser;
 use App\Entity\AWS\Lambda\LambdaFunction;
@@ -92,6 +94,18 @@ class CrawlVersion
     #[ORM\OneToMany(targetEntity: CloudWatchAlarm::class, mappedBy: 'crawl')]
     private Collection $cloudWatchAlarms;
 
+    /**
+     * @var Collection<int, EcsCluster>
+     */
+    #[ORM\OneToMany(targetEntity: EcsCluster::class, mappedBy: 'crawl')]
+    private Collection $ecsClusters;
+
+    /**
+     * @var Collection<int, EksCluster>
+     */
+    #[ORM\OneToMany(targetEntity: EksCluster::class, mappedBy: 'crawl')]
+    private Collection $eksClusters;
+
     public function __construct()
     {
         $this->awsAccounts = new ArrayCollection();
@@ -104,6 +118,8 @@ class CrawlVersion
         $this->iamRoles = new ArrayCollection();
         $this->iamUsers = new ArrayCollection();
         $this->cloudWatchAlarms = new ArrayCollection();
+        $this->ecsClusters = new ArrayCollection();
+        $this->eksClusters = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -421,6 +437,64 @@ class CrawlVersion
         if ($this->cloudWatchAlarms->removeElement($cloudWatchAlarm)) {
             if ($cloudWatchAlarm->getCrawl() === $this) {
                 $cloudWatchAlarm->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EcsCluster>
+     */
+    public function getEcsClusters(): Collection
+    {
+        return $this->ecsClusters;
+    }
+
+    public function addEcsCluster(EcsCluster $ecsCluster): static
+    {
+        if (!$this->ecsClusters->contains($ecsCluster)) {
+            $this->ecsClusters->add($ecsCluster);
+            $ecsCluster->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEcsCluster(EcsCluster $ecsCluster): static
+    {
+        if ($this->ecsClusters->removeElement($ecsCluster)) {
+            if ($ecsCluster->getCrawl() === $this) {
+                $ecsCluster->setCrawl(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EksCluster>
+     */
+    public function getEksClusters(): Collection
+    {
+        return $this->eksClusters;
+    }
+
+    public function addEksCluster(EksCluster $eksCluster): static
+    {
+        if (!$this->eksClusters->contains($eksCluster)) {
+            $this->eksClusters->add($eksCluster);
+            $eksCluster->setCrawl($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEksCluster(EksCluster $eksCluster): static
+    {
+        if ($this->eksClusters->removeElement($eksCluster)) {
+            if ($eksCluster->getCrawl() === $this) {
+                $eksCluster->setCrawl(null);
             }
         }
 

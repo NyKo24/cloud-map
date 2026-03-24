@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}EKS Clusters - Liste{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+    <turbo-frame id="aws-eks-clusters-list-frame" src="{{ path('app_aws_eks_clusters_list_frame', app.request.query.all) }}">
+
+        <div role="status" class="space-y-4 animate-pulse dark:divide-gray-700 max-w-full">
+            <div class="h-4 w-40 bg-gray-300 rounded dark:bg-gray-600 mb-3"></div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 w-full bg-gray-300 rounded dark:bg-gray-600"></div>
+            </div>
+
+            <div class="flex gap-4 mt-3">
+                <div class="h-10 w-32 bg-gray-300 rounded-lg dark:bg-gray-700"></div>
+                <div class="h-10 w-32 bg-gray-300 rounded-lg dark:bg-gray-700"></div>
+            </div>
+
+            <div class="h-6 w-64 bg-gray-200 rounded dark:bg-gray-700 mt-3"></div>
+
+            <div class="grid grid-cols-7 gap-4 bg-gray-50 dark:bg-gray-700 px-6 py-3 rounded">
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+                <div class="h-4 bg-gray-300 rounded dark:bg-gray-600"></div>
+            </div>
+
+            <div class="space-y-2">
+                {% for i in 0..5 %}
+                    <div class="grid grid-cols-7 gap-4 bg-white dark:bg-gray-800 p-4 rounded border dark:border-gray-700">
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                        <div class="h-4 bg-gray-200 rounded dark:bg-gray-700"></div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <span class="sr-only">Loading...</span>
+        </div>
+
+    </turbo-frame>
+{% endblock %}
