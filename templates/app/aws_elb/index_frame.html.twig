@@ -1,0 +1,172 @@
+<turbo-frame id="aws-elb-list-frame">
+    <div class="mb-3 count text-black dark:text-white">
+        {{ pagination.getTotalItemCount }} load balancer(s) trouvé(s)
+    </div>
+
+    <div class="mb-5">
+        {% import '_macro/_table_columns_display.html.twig' as macro %}
+
+        {% set columns = [
+            { 'label': 'Name', 'cssClass': 'lb-name', checked: true },
+            { 'label': 'Type', 'cssClass': 'type', checked: true },
+            { 'label': 'Scheme', 'cssClass': 'scheme', checked: true },
+            { 'label': 'State', 'cssClass': 'state', checked: true },
+            { 'label': 'DNS Name', 'cssClass': 'dns-name', checked: true },
+            { 'label': 'VPC ID', 'cssClass': 'vpc-id', checked: true },
+            { 'label': 'AZs', 'cssClass': 'azs', checked: true },
+            { 'label': 'Created', 'cssClass': 'created-time', checked: true }
+        ] %}
+
+        {{ form_start(searchForm, {action: path(app.current_route)}) }}
+
+        <div class="grid grid-cols-3 gap-4 items-end">
+            {{ form_row(searchForm.loadBalancerName) }}
+            {{ form_row(searchForm.type) }}
+            {{ form_row(searchForm.scheme) }}
+        </div>
+
+        {% for key, value in app.request.query.all %}
+            {% if searchForm[key] is not defined %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endif %}
+        {% endfor %}
+
+        <div class="flex gap-4 justify-between">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Rechercher
+            </button>
+            <div class="gap-4">
+                {{ macro.dropdownTableColumsDisplay(columns) }}
+                <a href="{{ path('app_aws_load_balancers_list_export', app.request.query.all) }}" class="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800">
+                    Exporter
+                </a>
+            </div>
+        </div>
+        {{ form_end(searchForm) }}
+    </div>
+
+    <div class="relative overflow-x-auto">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+            <tr>
+                <th scope="col" class="px-6 py-3 column-lb-name">{{ knp_pagination_sortable(pagination, 'Name', 'lb.loadBalancerName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-type">{{ knp_pagination_sortable(pagination, 'Type', 'lb.type', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-scheme">{{ knp_pagination_sortable(pagination, 'Scheme', 'lb.scheme', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-state">State</th>
+                <th scope="col" class="px-6 py-3 column-dns-name">{{ knp_pagination_sortable(pagination, 'DNS Name', 'lb.dnsName', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-vpc-id">{{ knp_pagination_sortable(pagination, 'VPC ID', 'lb.vpcId', [], app.request.query.all) }}</th>
+                <th scope="col" class="px-6 py-3 column-azs">AZs</th>
+                <th scope="col" class="px-6 py-3 column-created-time">{{ knp_pagination_sortable(pagination, 'Created', 'lb.createdTime', [], app.request.query.all) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for lb in pagination %}
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white column-lb-name">
+                        {{ lb.loadBalancerName }}
+                    </th>
+                    <td class="px-6 py-4 column-type">
+                        {% if lb.type %}
+                            {% if lb.type == 'application' %}
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300">
+                                    ALB
+                                </span>
+                            {% elseif lb.type == 'network' %}
+                                <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-purple-900 dark:text-purple-300">
+                                    NLB
+                                </span>
+                            {% elseif lb.type == 'gateway' %}
+                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-indigo-900 dark:text-indigo-300">
+                                    GLB
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-scheme">
+                        {% if lb.scheme %}
+                            {% if lb.scheme == 'internet-facing' %}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                                    {{ lb.scheme }}
+                                </span>
+                            {% else %}
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-900 dark:text-gray-300">
+                                    {{ lb.scheme }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-state">
+                        {% if lb.stateCode %}
+                            {% if lb.stateCode == 'active' %}
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-green-900 dark:text-green-300">
+                                    {{ lb.stateCode }}
+                                </span>
+                            {% elseif lb.stateCode == 'provisioning' %}
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">
+                                    {{ lb.stateCode }}
+                                </span>
+                            {% elseif lb.stateCode == 'failed' %}
+                                <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">
+                                    {{ lb.stateCode }}
+                                </span>
+                            {% else %}
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-gray-900 dark:text-gray-300">
+                                    {{ lb.stateCode }}
+                                </span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-dns-name">
+                        {% if lb.dnsName %}
+                            <span class="text-xs">{{ lb.dnsName }}</span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-vpc-id">
+                        {% if lb.vpcId %}
+                            {{ lb.vpcId }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-azs">
+                        {% set azNames = lb.availabilityZoneNames %}
+                        {% if azNames|length > 0 %}
+                            {% for az in azNames %}
+                                <span class="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded dark:bg-gray-900 dark:text-gray-300">
+                                    {{ az }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 column-created-time">
+                        {% if lb.createdTime %}
+                            {{ lb.createdTime|date('d/m/Y H:i:s') }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                        Aucun load balancer trouvé
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="mt-5 flex justify-end">
+            {{ knp_pagination_render(pagination) }}
+        </div>
+    </div>
+</turbo-frame>
