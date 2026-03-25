@@ -17,13 +17,13 @@ final class AWSLambdaController extends AbstractController
 {
     use AwsResourceSearchTrait;
 
-    #[Route('/app/aws/lambda', name: 'app_aws_lambda_list')]
+    #[Route('/aws/lambda', name: 'app_aws_lambda_list')]
     public function index(): Response
     {
         return $this->render('app/aws_lambda/index.html.twig');
     }
 
-    #[Route('/app/aws/lambda/_frame', name: 'app_aws_lambda_list_frame')]
+    #[Route('/aws/lambda/_frame', name: 'app_aws_lambda_list_frame')]
     public function indexFrame(Request $request, LambdaFunctionRepository $lambdaFunctionRepository, PaginatorInterface $paginator): Response
     {
         [$search, $searchForm] = $this->handleSearchForm($request, LambdaFunctionListSearch::class, LambdaFunctionListSearchForm::class);
@@ -42,7 +42,7 @@ final class AWSLambdaController extends AbstractController
         ]);
     }
 
-    #[Route('/app/aws/lambda/export', name: 'app_aws_lambda_list_export')]
+    #[Route('/aws/lambda/export', name: 'app_aws_lambda_list_export')]
     public function indexExport(Request $request, LambdaFunctionRepository $lambdaFunctionRepository, SerializerInterface $serializer): Response
     {
         [$search] = $this->handleSearchForm($request, LambdaFunctionListSearch::class, LambdaFunctionListSearchForm::class);

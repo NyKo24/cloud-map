@@ -17,13 +17,13 @@ final class AWSAccountsController extends AbstractController
 {
     use AwsResourceSearchTrait;
 
-    #[Route('/app/aws/accounts', name: 'app_aws_accounts_list')]
+    #[Route('/aws/accounts', name: 'app_aws_accounts_list')]
     public function index(): Response
     {
         return $this->render('app/aws_accounts/index.html.twig');
     }
 
-    #[Route('/app/aws/accounts/_frame', name: 'app_aws_accounts_list_frame')]
+    #[Route('/aws/accounts/_frame', name: 'app_aws_accounts_list_frame')]
     public function indexFrame(Request $request, AwsAccountRepository $awsAccountRepository, PaginatorInterface $paginator): Response
     {
         [$search, $searchForm] = $this->handleSearchForm($request, AWSAccountListSearch::class, AWSAccountListSearchForm::class);
@@ -41,7 +41,7 @@ final class AWSAccountsController extends AbstractController
         ]);
     }
 
-    #[Route('/app/aws/accounts/export', name: 'app_aws_accounts_list_export')]
+    #[Route('/aws/accounts/export', name: 'app_aws_accounts_list_export')]
     public function indexExport(Request $request, AwsAccountRepository $awsAccountRepository, SerializerInterface $serializer): Response
     {
         [$search] = $this->handleSearchForm($request, AWSAccountListSearch::class, AWSAccountListSearchForm::class);
